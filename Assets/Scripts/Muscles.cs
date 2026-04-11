@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -5,6 +6,8 @@ public class Muscles : MonoBehaviour
 {
     public float MovementSpeed {get; private set;}
     private readonly float targetPositionMargin = 0.1f;
+
+    private readonly float rotationSpeed = 1f;
     private Rigidbody rb;
     private Vector3 currentDestination;
     public bool IsMoving {get; private set;} = false;
@@ -54,5 +57,10 @@ public class Muscles : MonoBehaviour
 
         Vector3 direction = (currentDestination - transform.position).normalized;
         rb.linearVelocity = direction * MovementSpeed;
+
+        if (direction == Vector3.zero) { return; }
+
+        Quaternion targetRot = Quaternion.LookRotation(direction);
+        rb.MoveRotation(Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime));
     }
 }
