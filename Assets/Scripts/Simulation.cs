@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Simulation : MonoBehaviour
@@ -18,11 +19,12 @@ public class Simulation : MonoBehaviour
         for(int i = 0; i < startingNumberOfRabits;i++)
         {
             GameObject rabit = GameObject.Instantiate(rabitPrefab);
+            rabit.name = "Rabbit " + GUID.Generate();
             rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
 
             rabit.transform.position = new Vector3(
                 Random.Range(simulationBounds.min.x,simulationBounds.max.x),
-                0.5f,
+                0.3f,
                 Random.Range(simulationBounds.min.z,simulationBounds.max.z)   
             );
         }
@@ -40,7 +42,7 @@ public class Simulation : MonoBehaviour
         
         carrot.transform.position = new Vector3(
             Random.Range(simulationBounds.min.x,simulationBounds.max.x),
-            0.5f,
+            0.3f,
             Random.Range(simulationBounds.min.z,simulationBounds.max.z)   
         );
         

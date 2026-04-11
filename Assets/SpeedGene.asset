@@ -15,6 +15,6 @@ MonoBehaviour:
   Name: Speed Gene
   MinValue: 1
   MaxValue: 4
-  MutationChance: 3
+  MutationChance: 10
   MaxMutationAmount: 0.2
   MaxCost: 0.05

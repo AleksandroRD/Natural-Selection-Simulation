@@ -1,19 +1,28 @@
 using UnityEngine;
 
+public enum Gender
+{
+    Male,
+    Female
+}
+
 public abstract class Animal : SimulationEntity
 {
     public float CurrentEnergy{get; protected set;}
-
     [field: SerializeField]
     public float BaseExpenditure{get; protected set;}
     public float EnergyExpenditure{get; protected set;}
     public float MatingUrge{get; protected set;}
     public Behaviour CurrentBehaviour{get; protected set;}
     public const float MAXENERGY = 100f;
+    public Gender Gender{get; protected set;}
+
     public abstract void Replicate(Genome otherGenome);
+    public abstract void Replicate();
 
     public override void Simulate()
     {
+        MatingUrge += 0.1f;
         CurrentEnergy -= EnergyExpenditure;
 
         if(CurrentEnergy <= 0)
@@ -43,10 +52,9 @@ public abstract class Animal : SimulationEntity
             CurrentEnergy = MAXENERGY;
         }
     }
+
     public void Death()
     {
         GameObject.Destroy(this.gameObject);
     }
-
-
 }

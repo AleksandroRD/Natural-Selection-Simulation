@@ -3,9 +3,14 @@ using UnityEngine;
 
 public class Rabbit : Animal
 {
-    public Genome genome{get; protected set;}
+    public Genome Genome{get; protected set;}
     private SensoryNervousSystem sensorySystem;
     private Muscles muscles;
+
+    public bool IsReadyToMate()
+    {
+        return MatingUrge >= 100f;
+    }
 
     public void Initialize(List<GeneScriptableObject> initialGeneData)
     {
@@ -14,46 +19,59 @@ public class Rabbit : Animal
 
     public void Initialize(Genome genome)
     {
-        this.genome = genome;
+        this.Genome = genome;
         muscles = GetComponent<Muscles>();
         sensorySystem = GetComponent<SensoryNervousSystem>();
         CurrentEnergy = 100.0f;
         EnergyExpenditure = BaseExpenditure;
 
+        System.Random rnd = new System.Random();
+        int result = rnd.Next(0,2);
+        if (result == 0)
+        {
+            Gender = Gender.Male;
+        }
+        else
+        {
+            Gender = Gender.Female;
+        }
+        
         muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
         SetBehaviour( new WanderBehavior(muscles));
     }
 
+    public override void Replicate()
+    {
+        MatingUrge = 0;
+    }
+
     public override void Replicate(Genome otherGenome)
     {
-        Genome childGenome = genome.Recombine(otherGenome);
+        Genome childGenome = Genome.Recombine(otherGenome);
 
         GameObject childGameObject = new GameObject("Rabbit", typeof(Muscles), typeof(SensoryNervousSystem));
 
         childGameObject.AddComponent<Rabbit>().Initialize(childGenome);
-    }
-    bool IsReadyToMate()
-    {
-        return MatingUrge >= 100f;
+
+        MatingUrge = 0;
     }
 
     public override void Simulate()
     {
         base.Simulate();
-
-        if(CurrentEnergy < 25 || CurrentEnergy < 70)
+    
+        if (CurrentEnergy < 25 || (CurrentEnergy < 70 && !IsReadyToMate()))
         {
             SetBehaviour(new SearchForFoodBehaviour(sensorySystem, muscles, Eat));
         }
-
-        //if(CurrentEnergy > 70)
-        //{
-        //    SetBehaviour( new WanderBehavior(muscles));
-        //}
-        // if (IsReadyToMate() && CurrentEnergy > 50)
-        // {
-        //     SetBehaviour(new MateBehaviour(sensorySystem, muscles));
-        // }
+        else if (IsReadyToMate() && CurrentEnergy > 50)
+        {
+            SetBehaviour(new MateBehaviour(sensorySystem, muscles, this));
+        }
+        else if (CurrentEnergy > 70)
+        {
+            SetBehaviour(new WanderBehavior(muscles));
+        }
     }
 }

@@ -35,7 +35,7 @@ public class Genome
         
         foreach(var gene in genes)
         {
-            int result = rnd.Next(0,1);
+            int result = rnd.Next(0,2);
             if(result == 0)
             {
                 newGenome.Add(gene.Key,gene.Value.Replicate());

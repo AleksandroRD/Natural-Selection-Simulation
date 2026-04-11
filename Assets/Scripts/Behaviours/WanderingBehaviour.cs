@@ -33,7 +33,7 @@ public class WanderBehavior : Behaviour
     {
         //
         Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-        Vector3 offset = new Vector3(randomCircle.x, 0.2f, randomCircle.y);
+        Vector3 offset = new Vector3(randomCircle.x, 0.1f, randomCircle.y);
         return muscles.transform.position + offset;
     }
 }
