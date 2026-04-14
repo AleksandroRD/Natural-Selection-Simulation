@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f11317759482514fbad2148259de892, type: 3}
-  m_Name: SpeedGene
+  m_Name: SexDriveGene
   m_EditorClassIdentifier: Assembly-CSharp::GeneScriptableObject
-  Name: Speed Gene
-  MinValue: 2
-  MaxValue: 4
+  Name: Sex Drive
+  MinValue: 0.05
+  MaxValue: 0.1
   MutationChance: 10
-  MaxMutationAmount: 0.2
-  MinCost: 0.05
-  MaxCost: 0.08
+  MaxMutationAmount: 0
+  MinCost: 0
+  MaxCost: 0

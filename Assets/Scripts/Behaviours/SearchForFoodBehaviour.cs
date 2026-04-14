@@ -12,8 +12,8 @@ class SearchForFoodBehaviour : Behaviour
 
     private float wanderRadius = 5;
 
-    Action<int> eatingFunction;
-    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<int> eatingFunction)
+    Action<float> eatingFunction;
+    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction)
     {
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
@@ -31,7 +31,7 @@ class SearchForFoodBehaviour : Behaviour
     {
         Food nearestFood = sensorySystem.LookFor<Food>();
 
-        if(nearestFood != null)
+        if(nearestFood != null && !nearestFood.isBeingConsumed)
         {
             currentDestination = nearestFood.transform.position;
         }
@@ -44,7 +44,7 @@ class SearchForFoodBehaviour : Behaviour
             if(eatingTimer >= eatingTime)
             {
                 GameObject.Destroy(nearestFood.gameObject);
-                eatingFunction(50);
+                eatingFunction(nearestFood.Consume());
 
                 eatingTimer = 0;
             }

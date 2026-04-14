@@ -15,5 +15,6 @@ public class GeneScriptableObject : ScriptableObject
 
     public float MaxMutationAmount;
 
+    public float MinCost;
     public float MaxCost;
 }

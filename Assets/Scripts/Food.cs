@@ -2,5 +2,23 @@ using UnityEngine;
 
 public class Food : MonoBehaviour
 {
-    
+    public float nutritionalValue { get; protected set; }
+
+    [SerializeField]
+    private float minValue;
+    [SerializeField]
+    private float maxValue;
+
+    public bool isBeingConsumed{get; protected set;} = false;
+    public float Consume()
+    {
+        isBeingConsumed = true;
+        return nutritionalValue;
+    }
+    void Awake()
+    {
+        nutritionalValue = Random.Range(minValue, maxValue);
+        float scale = Mathf.Lerp(0,1, nutritionalValue/maxValue);
+        this.gameObject.transform.localScale = Vector3.Scale(new Vector3(scale,scale,scale), this.gameObject.transform.localScale);
+    }
 }

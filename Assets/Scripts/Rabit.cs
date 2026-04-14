@@ -7,7 +7,7 @@ public class Rabbit : Animal
     private SensoryNervousSystem sensorySystem;
     private Muscles muscles;
     public static int MaxID = 0;
-    
+
     public bool IsReadyToMate()
     {
         return MatingUrge >= 100f;
@@ -20,14 +20,18 @@ public class Rabbit : Animal
 
     public void Initialize(Genome genome)
     {
-        this.name = "Rabbit " + MaxID;
-        MaxID++;
+        this.name = "Rabbit " + MaxID++;
         this.Genome = genome;
+
         muscles = GetComponent<Muscles>();
         sensorySystem = GetComponent<SensoryNervousSystem>();
         CurrentEnergy = 100.0f;
-        EnergyExpenditure = BaseExpenditure;
-
+        
+        foreach(var gene in Genome.genes)
+        {
+            EnergyExpenditure += gene.Value.Cost;
+        }
+        
         System.Random rnd = new System.Random();
         int result = rnd.Next(0,2);
         if (result == 0)
@@ -39,6 +43,7 @@ public class Rabbit : Animal
             Gender = Gender.Female;
         }
         
+        SexDrive = genome.GetGeneValue("Sex Drive");
         muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
         SetBehaviour( new WanderBehavior(muscles));

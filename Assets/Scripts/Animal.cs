@@ -9,10 +9,9 @@ public enum Gender
 public abstract class Animal : SimulationEntity
 {
     public float CurrentEnergy{get; protected set;}
-    [field: SerializeField]
-    public float BaseExpenditure{get; protected set;}
-    public float EnergyExpenditure{get; protected set;}
-    public float MatingUrge{get; protected set;}
+    public float EnergyExpenditure{get; protected set;} = 0;
+    public float MatingUrge{get; protected set;} = 0;
+    public float SexDrive{get; protected set;}
     public Behaviour CurrentBehaviour{get; protected set;}
     public const float MAXENERGY = 100f;
     public Gender Gender{get; protected set;}
@@ -22,7 +21,7 @@ public abstract class Animal : SimulationEntity
 
     public override void Simulate()
     {
-        MatingUrge += 0.1f;
+        MatingUrge += SexDrive;
         CurrentEnergy -= EnergyExpenditure;
 
         if(CurrentEnergy <= 0)
@@ -41,7 +40,7 @@ public abstract class Animal : SimulationEntity
         CurrentBehaviour = newBehaviour;
     }
 
-    protected void Eat(int amount)
+    protected void Eat(float amount)
     {
         if(CurrentEnergy + amount < MAXENERGY)
         {
@@ -53,7 +52,7 @@ public abstract class Animal : SimulationEntity
         }
     }
 
-    public void Death()
+    public virtual void Death()
     {
         GameObject.Destroy(this.gameObject);
     }

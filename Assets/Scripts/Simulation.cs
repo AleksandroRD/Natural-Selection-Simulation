@@ -15,6 +15,9 @@ public class Simulation : MonoBehaviour
     private static Bounds simulationBoundsInternal;
     [SerializeField]
     private GameObject carrotPrefab;
+
+    [SerializeField]
+    private float startingNumberofCarrots;
     
     void Start()
     {
@@ -22,13 +25,16 @@ public class Simulation : MonoBehaviour
         for(int i = 0; i < startingNumberOfRabits;i++)
         {
             GameObject rabit = GameObject.Instantiate(rabitPrefab);
+            rabit.transform.position = GetRandomPostion();
+
             rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
 
-            rabit.transform.position = new Vector3(
-                Random.Range(simulationBounds.min.x,simulationBounds.max.x),
-                0.3f,
-                Random.Range(simulationBounds.min.z,simulationBounds.max.z)   
-            );
+        }
+
+        for(int i = 0; i < startingNumberofCarrots; i++)
+        {
+            GameObject carrot = GameObject.Instantiate(carrotPrefab);
+            carrot.transform.position = GetRandomPostion();
         }
     }
 
@@ -41,12 +47,7 @@ public class Simulation : MonoBehaviour
         if(timer < timeToSpawnCarrot) {return; }
         
         var carrot = GameObject.Instantiate(carrotPrefab);
-        
-        carrot.transform.position = new Vector3(
-            Random.Range(simulationBounds.min.x,simulationBounds.max.x),
-            0.3f,
-            Random.Range(simulationBounds.min.z,simulationBounds.max.z)   
-        );
+        carrot.transform.position = GetRandomPostion();
         
         timer = 0;
     }
@@ -63,6 +64,15 @@ public class Simulation : MonoBehaviour
         while(!simulationBoundsInternal.Contains(origin + offset));
         
         return origin + offset;
+    }
+
+    public static Vector3 GetRandomPostion()
+    {
+        return new Vector3(
+            Random.Range(simulationBoundsInternal.min.x, simulationBoundsInternal.max.x),
+            0.3f,
+            Random.Range(simulationBoundsInternal.min.z, simulationBoundsInternal.max.z)   
+        );
     }
 
 #if UNITY_EDITOR

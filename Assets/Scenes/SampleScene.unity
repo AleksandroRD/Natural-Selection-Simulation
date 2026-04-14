@@ -579,10 +579,12 @@ MonoBehaviour:
   initialRabbitGeneData:
   - {fileID: 11400000, guid: a635799271b496947b8b1b64c61dc598, type: 2}
   - {fileID: 11400000, guid: df930226177c82e4ca0c51c843e591e8, type: 2}
+  - {fileID: 11400000, guid: dd0500bf4b560f84d804aac80b929af8, type: 2}
   simulationBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 25, y: 5, z: 25}
   carrotPrefab: {fileID: 2932444324656926922, guid: f31fa0ae7a230d547a5ae707780aa5fe, type: 3}
+  startingNumberofCarrots: 20
   timeToSpawnCarrot: 1
 --- !u!4 &1222357338
 Transform:
