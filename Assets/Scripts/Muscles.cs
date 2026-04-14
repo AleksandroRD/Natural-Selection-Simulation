@@ -5,7 +5,7 @@ using UnityEngine;
 public class Muscles : MonoBehaviour
 {
     public float MovementSpeed {get; private set;}
-    private readonly float targetPositionMargin = 0.1f;
+    private readonly float targetPositionMargin = 0.15f;
 
     private readonly float rotationSpeed = 1f;
     private Rigidbody rb;
@@ -56,6 +56,7 @@ public class Muscles : MonoBehaviour
         }
 
         Vector3 direction = (currentDestination - transform.position).normalized;
+        direction.y = 0f;
         rb.linearVelocity = direction * MovementSpeed;
 
         if (direction == Vector3.zero) { return; }

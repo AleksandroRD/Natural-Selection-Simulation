@@ -6,7 +6,8 @@ public class Rabbit : Animal
     public Genome Genome{get; protected set;}
     private SensoryNervousSystem sensorySystem;
     private Muscles muscles;
-
+    public static int MaxID = 0;
+    
     public bool IsReadyToMate()
     {
         return MatingUrge >= 100f;
@@ -19,6 +20,8 @@ public class Rabbit : Animal
 
     public void Initialize(Genome genome)
     {
+        this.name = "Rabbit " + MaxID;
+        MaxID++;
         this.Genome = genome;
         muscles = GetComponent<Muscles>();
         sensorySystem = GetComponent<SensoryNervousSystem>();
@@ -50,9 +53,9 @@ public class Rabbit : Animal
     {
         Genome childGenome = Genome.Recombine(otherGenome);
 
-        GameObject childGameObject = new GameObject("Rabbit", typeof(Muscles), typeof(SensoryNervousSystem));
+        GameObject childGameObject = GameObject.Instantiate(this.gameObject);
 
-        childGameObject.AddComponent<Rabbit>().Initialize(childGenome);
+        childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
 
         MatingUrge = 0;
     }

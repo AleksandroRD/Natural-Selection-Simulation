@@ -12,14 +12,16 @@ public class Simulation : MonoBehaviour
     private List<GeneScriptableObject> initialRabbitGeneData;
     [SerializeField]
     private Bounds simulationBounds;
+    private static Bounds simulationBoundsInternal;
     [SerializeField]
     private GameObject carrotPrefab;
+    
     void Start()
     {
+        simulationBoundsInternal = simulationBounds;
         for(int i = 0; i < startingNumberOfRabits;i++)
         {
             GameObject rabit = GameObject.Instantiate(rabitPrefab);
-            rabit.name = "Rabbit " + GUID.Generate();
             rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
 
             rabit.transform.position = new Vector3(
@@ -48,4 +50,26 @@ public class Simulation : MonoBehaviour
         
         timer = 0;
     }
+
+    public static Vector3 PickRandomDectination(Vector3 origin, float radius)
+    {
+        Vector3 offset;
+        
+        do
+        {
+            Vector2 randomCircle = Random.insideUnitCircle * radius;
+            offset = new Vector3(randomCircle.x, 0.1f, randomCircle.y);
+        }
+        while(!simulationBoundsInternal.Contains(origin + offset));
+        
+        return origin + offset;
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0,0,0);
+        Gizmos.DrawWireCube(transform.position,simulationBounds.size);
+    }
+#endif
 }

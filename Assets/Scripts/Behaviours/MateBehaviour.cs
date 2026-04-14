@@ -17,23 +17,21 @@ class MateBehaviour : Behaviour
         this.muscles = muscles;
         this.animal = animal;
 
-        currentDestination = PickRandomDestination();
+        currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
     }
 
     public override void Perform()
     {
         Rabbit nearestMate = sensorySystem.LookFor<Rabbit>();
-        Debug.Log(nearestMate);
         
         if (nearestMate != null && nearestMate.IsReadyToMate() && nearestMate.Gender != animal.Gender)
         {
-            Debug.Log("Found mate");
             currentDestination = nearestMate.transform.position;
         }
         
         if(nearestMate == null && muscles.HasArrived())
         {
-            currentDestination = PickRandomDestination();
+            currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
         }
 
         if(nearestMate != null && muscles.HasArrived())
@@ -59,11 +57,4 @@ class MateBehaviour : Behaviour
         muscles.MoveTo(currentDestination);
     }
 
-    private Vector3 PickRandomDestination()
-    {
-        Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-        Vector3 offset = new Vector3(randomCircle.x, 0f, randomCircle.y);
-        return muscles.transform.position + offset;
-        
-    }
 }

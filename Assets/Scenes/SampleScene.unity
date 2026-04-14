@@ -581,7 +581,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: df930226177c82e4ca0c51c843e591e8, type: 2}
   simulationBounds:
     m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 20, y: 0, z: 20}
+    m_Extent: {x: 25, y: 5, z: 25}
   carrotPrefab: {fileID: 2932444324656926922, guid: f31fa0ae7a230d547a5ae707780aa5fe, type: 3}
   timeToSpawnCarrot: 1
 --- !u!4 &1222357338
@@ -593,7 +593,7 @@ Transform:
   m_GameObject: {fileID: 1222357336}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.21754, y: 0, z: -1.59091}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

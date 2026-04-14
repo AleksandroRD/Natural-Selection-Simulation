@@ -11,7 +11,7 @@ public class WanderBehavior : Behaviour
     public WanderBehavior(Muscles muscles)
     {
         this.muscles = muscles;
-        currentTarget = PickRandomDestination();
+        currentTarget = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
     }
 
     ~WanderBehavior()
@@ -23,17 +23,10 @@ public class WanderBehavior : Behaviour
     {
         if (muscles.HasArrived())
         {  
-            currentTarget = PickRandomDestination();
+            currentTarget = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
         }
 
         muscles.MoveTo(currentTarget);
     }
 
-    private Vector3 PickRandomDestination()
-    {
-        //
-        Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-        Vector3 offset = new Vector3(randomCircle.x, 0.1f, randomCircle.y);
-        return muscles.transform.position + offset;
-    }
 }

@@ -19,7 +19,7 @@ class SearchForFoodBehaviour : Behaviour
         this.muscles = muscles;
         this.eatingFunction = eatingFunction;
 
-        currentDestination = PickRandomDestination();
+        currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
     }
 
     ~SearchForFoodBehaviour()
@@ -53,17 +53,9 @@ class SearchForFoodBehaviour : Behaviour
         //if we creature stoped moving and see no food around
         if(nearestFood == null && muscles.HasArrived())
         {
-            currentDestination = PickRandomDestination();
+            currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
         }
 
         muscles.MoveTo(currentDestination);
-    }
-
-    private Vector3 PickRandomDestination()
-    {
-        Vector2 randomCircle = UnityEngine.Random.insideUnitCircle * wanderRadius;
-        Vector3 offset = new Vector3(randomCircle.x, 0f, randomCircle.y);
-        return muscles.transform.position + offset;
-        
     }
 }
