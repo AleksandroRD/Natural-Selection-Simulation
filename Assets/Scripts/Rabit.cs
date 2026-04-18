@@ -47,6 +47,8 @@ public class Rabbit : Animal
         muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
         SetBehaviour( new WanderBehavior(muscles));
+
+        Statistics.LogPopulation("Rabbit", true);
     }
 
     public override void Replicate()
@@ -81,5 +83,11 @@ public class Rabbit : Animal
         {
             SetBehaviour(new WanderBehavior(muscles));
         }
+    }
+
+    protected override void Death()
+    {
+        Statistics.LogPopulation("Rabbit", false);
+        base.Death();
     }
 }

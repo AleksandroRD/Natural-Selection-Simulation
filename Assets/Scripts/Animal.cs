@@ -52,7 +52,7 @@ public abstract class Animal : SimulationEntity
         }
     }
 
-    public virtual void Death()
+    protected virtual void Death()
     {
         GameObject.Destroy(this.gameObject);
     }

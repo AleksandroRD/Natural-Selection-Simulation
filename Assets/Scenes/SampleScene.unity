@@ -555,6 +555,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1222357338}
   - component: {fileID: 1222357337}
+  - component: {fileID: 1222357339}
+  - component: {fileID: 1222357340}
   m_Layer: 0
   m_Name: Simulation
   m_TagString: Untagged
@@ -574,15 +576,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ebfc33f50fa7af4298a48c556838715, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Simulation
-  startingNumberOfRabits: 10
+  simulationBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 25, y: 5, z: 25}
   rabitPrefab: {fileID: 1481201580239991003, guid: adbba3622ebd30841b7f6c81b73bfbc5, type: 3}
   initialRabbitGeneData:
   - {fileID: 11400000, guid: a635799271b496947b8b1b64c61dc598, type: 2}
   - {fileID: 11400000, guid: df930226177c82e4ca0c51c843e591e8, type: 2}
   - {fileID: 11400000, guid: dd0500bf4b560f84d804aac80b929af8, type: 2}
-  simulationBounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 25, y: 5, z: 25}
+  startingNumberOfRabits: 10
   carrotPrefab: {fileID: 2932444324656926922, guid: f31fa0ae7a230d547a5ae707780aa5fe, type: 3}
   startingNumberofCarrots: 20
   timeToSpawnCarrot: 1
@@ -601,6 +603,41 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1222357339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222357336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c050ea3523cffd49bfa9195ee50894c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistogramDisplay
+--- !u!114 &1222357340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222357336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: c3f0f128230829f4186cec79c578e468, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 7f3919dc77da55646816486c389a2394, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

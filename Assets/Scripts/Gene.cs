@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Gene
 {
@@ -18,6 +20,7 @@ public class Gene
     public readonly float MinCost;
     public readonly float Cost;
 
+    public readonly Guid ID;
     private Gene(string name, float minValue, float maxValue, float minCost, float maxCost, float mutationChance, float maxMutaionAmount, float value)
     {
         this.Name = name;
@@ -29,11 +32,14 @@ public class Gene
         this.MinCost = minCost;
         this.MaxCost = maxCost;
         this.Cost = GetCost();
+        this.ID = Guid.NewGuid();
+
+        Statistics.LogGene(Name, ID, Value);
     }
 
     public Gene(GeneScriptableObject data)
     {
-        this.Name = data.name;
+        this.Name = data.Name;
         this.MinValue = data.MinValue;
         this.MaxValue = data.MaxValue;
         this.MinCost = data.MinCost;
@@ -42,6 +48,14 @@ public class Gene
         this.MaxMutationAmount = data.MaxMutationAmount;
         this.Value = Random.Range(MinValue,MaxValue);
         this.Cost = GetCost();
+        this.ID = Guid.NewGuid();
+
+        Statistics.LogGene(Name, ID, Value);
+    }
+
+    ~Gene()
+    {
+        Statistics.DelogGene(Name,ID);
     }
 
     private float GetCost()

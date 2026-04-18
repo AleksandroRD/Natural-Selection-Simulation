@@ -1,0 +1,10 @@
+:root {
+}
+
+
+
+.bar {
+    background-color: rgb(140, 201, 36);
+    flex-direction: column;
+    flex-grow: 1;
+}

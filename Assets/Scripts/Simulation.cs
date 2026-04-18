@@ -5,14 +5,14 @@ using UnityEngine;
 public class Simulation : MonoBehaviour
 {
     [SerializeField]
-    private int startingNumberOfRabits;
+    private Bounds simulationBounds;
+    private static Bounds simulationBoundsInternal;
     [SerializeField]
     private GameObject rabitPrefab;
     [SerializeField]
     private List<GeneScriptableObject> initialRabbitGeneData;
     [SerializeField]
-    private Bounds simulationBounds;
-    private static Bounds simulationBoundsInternal;
+    private int startingNumberOfRabits;
     [SerializeField]
     private GameObject carrotPrefab;
 
