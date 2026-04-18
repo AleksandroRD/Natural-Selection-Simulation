@@ -17,6 +17,11 @@ public class Statistics : MonoBehaviour
         return geneRecords[geneName].Values.ToArray();
     }
 
+    public static List<string> GetAllGenesNames()
+    {
+        return geneRecords.Keys.ToList();
+    }
+
     public static void LogGene(string geneName, Guid id, float value)
     {
         if (!geneRecords.ContainsKey(geneName) || !geneHistoryAvarage.ContainsKey(geneName) )

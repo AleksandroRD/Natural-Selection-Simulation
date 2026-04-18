@@ -9,17 +9,34 @@ public class StatisticsDispaly : MonoBehaviour
 
     string chosenGene = "Speed Gene";
     VisualElement  _barCanvas;
+    DropdownField  _geneDropdown;
+    Label          _averageLabel;
 
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
         _barCanvas    = root.Q<VisualElement>("bar-canvas");
+        _averageLabel = root.Q<Label>("average-label");
+        _geneDropdown = root.Q<DropdownField>("gene-dropdown");
 
-        Statistics.OnGeneStatisticsUpdated += something;
+        _geneDropdown.RegisterValueChangedCallback(OnDropdownChanged);
+        Statistics.OnGeneStatisticsUpdated += UpdateStatistics;
     }
 
-    void something(string geneName)
+    void OnDropdownChanged(ChangeEvent<string> evt)
     {
+        chosenGene = evt.newValue;
+
+        if(evt.newValue != evt.previousValue)
+        {
+            UpdateStatistics(chosenGene);
+        }
+    }
+
+    void UpdateStatistics(string geneName)
+    {
+        PopulateDropdown();
+        
         if(chosenGene != geneName) { return; }
         float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
         int valueCount = recordValues.Count();
@@ -35,6 +52,7 @@ public class StatisticsDispaly : MonoBehaviour
             sum += value;
         }
         float avg = sum / (float)valueCount;
+        _averageLabel.text = "Avg: " + avg;
 
         RedrawHistogram(recordValues, minVal, maxVal, avg);
     }
@@ -74,8 +92,18 @@ public class StatisticsDispaly : MonoBehaviour
             bar.AddToClassList("bar");
             bar.style.height = new StyleLength(new Length(frac * 100f, LengthUnit.Percent));
             bar.tooltip = $"[{minValue + i * interval:F2} – {maxValue + (i + 1) * interval:F2}]\nCount: {counts[i]}";
-            
+
             _barCanvas.Add(bar);
         }
+    }
+
+    void PopulateDropdown()
+    {
+        string previous = _geneDropdown.value;
+        var genes = Statistics.GetAllGenesNames();
+        _geneDropdown.choices = genes;
+        _geneDropdown.SetValueWithoutNotify(genes.Contains(previous) ? previous : genes[0]);
+
+        chosenGene = _geneDropdown.value;
     }
 }
