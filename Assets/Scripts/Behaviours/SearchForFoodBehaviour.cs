@@ -39,12 +39,12 @@ class SearchForFoodBehaviour : Behaviour
         //found food and arrived at foods location
         if (nearestFood != null && muscles.HasArrived())
         {
+            nearestFood.StartConsumtion();
             eatingTimer += Time.deltaTime;
 
             if(eatingTimer >= eatingTime)
             {
-                GameObject.Destroy(nearestFood.gameObject);
-                eatingFunction(nearestFood.Consume());
+                eatingFunction(nearestFood.FinishConsumption());
 
                 eatingTimer = 0;
             }

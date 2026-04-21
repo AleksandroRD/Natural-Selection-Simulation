@@ -9,12 +9,18 @@ public class Food : MonoBehaviour
     [SerializeField]
     private float maxValue;
 
-    public bool isBeingConsumed{get; protected set;} = false;
-    public float Consume()
+    public bool isBeingConsumed{get; private set;} = false;
+    public void StartConsumtion()
     {
         isBeingConsumed = true;
+    }
+
+    public float FinishConsumption()
+    {   
+        Destroy(gameObject);
         return nutritionalValue;
     }
+
     void Awake()
     {
         nutritionalValue = Random.Range(minValue, maxValue);

@@ -5,6 +5,8 @@ using UnityEngine;
 public class Simulation : MonoBehaviour
 {
     [SerializeField]
+    private float timeScale = 1;
+    [SerializeField]
     private Bounds simulationBounds;
     private static Bounds simulationBoundsInternal;
     [SerializeField]
@@ -19,8 +21,12 @@ public class Simulation : MonoBehaviour
     [SerializeField]
     private float startingNumberofCarrots;
     
+    [SerializeField]
+    private float timeToSpawnCarrot = 1;
     void Start()
     {
+        Time.timeScale = timeScale;
+        
         simulationBoundsInternal = simulationBounds;
         for(int i = 0; i < startingNumberOfRabits;i++)
         {
@@ -39,8 +45,6 @@ public class Simulation : MonoBehaviour
     }
 
     private float timer = 0;
-    [SerializeField]
-    private float timeToSpawnCarrot = 1;
     void FixedUpdate()
     {
         timer += Time.deltaTime;
@@ -59,7 +63,7 @@ public class Simulation : MonoBehaviour
         do
         {
             Vector2 randomCircle = Random.insideUnitCircle * radius;
-            offset = new Vector3(randomCircle.x, 0.1f, randomCircle.y);
+            offset = new Vector3(randomCircle.x, 0.0f, randomCircle.y);
         }
         while(!simulationBoundsInternal.Contains(origin + offset));
         

@@ -18,6 +18,7 @@ class MateBehaviour : Behaviour
         this.animal = animal;
 
         currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
+
     }
 
     public override void Perform()
@@ -46,8 +47,14 @@ class MateBehaviour : Behaviour
             }
 
             if(animal.Gender == Gender.Female)
-            {    
-                animal.Replicate(nearestMate.Genome);
+            {
+                System.Random rnd = new System.Random();
+                int numberOfChildren = rnd.Next(0,4);
+
+                for(int i = 0; i < numberOfChildren; i++)
+                {    
+                    animal.Replicate(nearestMate.Genome);
+                }    
             }
 
             matingTimer = 0;
