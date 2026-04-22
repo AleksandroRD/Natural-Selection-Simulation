@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -71,17 +72,38 @@ public class Rabbit : Animal
     {
         base.Simulate();
     
-        if (CurrentEnergy < 25 || (CurrentEnergy < 70 && !IsReadyToMate()))
+        Type desiredBehaviour = GetDesiredBehaviourType();
+        
+        if (CurrentBehaviour?.GetType() == desiredBehaviour) { return; }
+        
+        if (desiredBehaviour == typeof(SearchForFoodBehaviour))
         {
             SetBehaviour(new SearchForFoodBehaviour(sensorySystem, muscles, Eat));
         }
-        else if (IsReadyToMate() && CurrentEnergy > 50)
-        {
+        else if (desiredBehaviour == typeof(MateBehaviour))
+        { 
             SetBehaviour(new MateBehaviour(sensorySystem, muscles, this));
         }
-        else if (CurrentEnergy > 70)
+        else if (desiredBehaviour == typeof(WanderBehavior))
         {
             SetBehaviour(new WanderBehavior(muscles));
+        }
+        
+    }
+    
+    private Type GetDesiredBehaviourType()
+    {
+        if (CurrentEnergy < 25 || (CurrentEnergy < 70 && !IsReadyToMate()))
+        {
+            return typeof(SearchForFoodBehaviour);
+            
+        }else if (IsReadyToMate() && CurrentEnergy > 50){
+             
+            return typeof(MateBehaviour);
+        }
+        else
+        {
+            return typeof(WanderBehavior);
         }
     }
 
