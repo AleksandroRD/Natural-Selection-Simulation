@@ -1,41 +1,108 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+public enum StatisticsDispalyMode
+{
+    Population,
+    Gene
+}
 
 [RequireComponent(typeof(UIDocument))]
 public class StatisticsDispaly : MonoBehaviour
 {
-
+    [SerializeField] private Color lineColor   = new Color(0.27f, 0.71f, 1f);
+    [SerializeField] private float lineWidth   = 2.5f;
     string chosenGene = "Speed Gene";
-    VisualElement  _barCanvas;
-    DropdownField  _geneDropdown;
-    Label          _averageLabel;
 
+    string chosenCreature = "Rabbit";
+
+    VisualElement  geneHistogramCanvas;
+    DropdownField  geneDropdown;
+    Label          geneAverageLabel;
+    Label          geneOverallCountLabel;
+
+    VisualElement  populationChartCanvas;
+    EnumField      modeDropdown;
+    VisualElement  geneHistogramRoot;
+    VisualElement  populationChartRoot;
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
-        _barCanvas    = root.Q<VisualElement>("bar-canvas");
-        _averageLabel = root.Q<Label>("average-label");
-        _geneDropdown = root.Q<DropdownField>("gene-dropdown");
 
-        _geneDropdown.RegisterValueChangedCallback(OnDropdownChanged);
-        Statistics.OnGeneStatisticsUpdated += UpdateStatistics;
+        modeDropdown = root.Q<EnumField>("mode-dropdown");
+        geneHistogramRoot = root.Q<VisualElement>("gene-chart");
+        populationChartRoot = root.Q<VisualElement>("population-chart");
+        geneHistogramCanvas    = root.Q<VisualElement>("gene-histogram-canvas");
+        geneAverageLabel = root.Q<Label>("gene-average-label");
+        geneDropdown = root.Q<DropdownField>("gene-dropdown");
+        geneOverallCountLabel = root.Q<Label>("gene-overall-count-label");
+        populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
+
+        modeDropdown.RegisterValueChangedCallback(OnModeDropdownChange);
+        geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
+
+        populationChartCanvas.generateVisualContent += DrawPopulationChart;
+
+        ChangeMode();
     }
 
-    void OnDropdownChanged(ChangeEvent<string> evt)
+    void ChangeMode()
+    {
+        if((StatisticsDispalyMode)modeDropdown.value == StatisticsDispalyMode.Gene)
+        {
+            geneHistogramRoot.style.display = DisplayStyle.Flex;
+            populationChartRoot.style.display  = DisplayStyle.None;
+            Statistics.OnPopulationUpdated -= populationChartCanvas.MarkDirtyRepaint;
+
+            Statistics.OnGeneStatisticsUpdated += UpdateGeneHistogram;
+            Statistics.OnPopulationUpdated += UpdateOverallGeneCount;
+        }
+        else
+        {
+            geneHistogramRoot.style.display = DisplayStyle.None;
+            populationChartRoot.style.display  = DisplayStyle.Flex;
+
+            Statistics.OnPopulationUpdated += populationChartCanvas.MarkDirtyRepaint;
+
+            Statistics.OnGeneStatisticsUpdated -= UpdateGeneHistogram;
+            Statistics.OnPopulationUpdated -= UpdateOverallGeneCount;
+        }
+
+    }
+    void OnModeDropdownChange(ChangeEvent<Enum> evt)
+    {
+        ChangeMode();
+    }
+    void PopulateGeneDropdown()
+    {
+        string previous = geneDropdown.value;
+        var genes = Statistics.GetAllGenesNames();
+        geneDropdown.choices = genes;
+        geneDropdown.SetValueWithoutNotify(genes.Contains(previous) ? previous : genes[0]);
+
+        chosenGene = geneDropdown.value;
+    }
+
+    void OnGeneDropdownChanged(ChangeEvent<string> evt)
     {
         chosenGene = evt.newValue;
 
         if(evt.newValue != evt.previousValue)
         {
-            UpdateStatistics(chosenGene);
+            UpdateGeneHistogram(chosenGene);
         }
     }
-
-    void UpdateStatistics(string geneName)
+    void UpdateOverallGeneCount()
     {
-        PopulateDropdown();
+        geneOverallCountLabel.text = "N - " + Statistics.GetCurrentPopulation("Rabbit").ToString();
+    }
+
+    void UpdateGeneHistogram(string geneName)
+    {
+        PopulateGeneDropdown();
         
         if(chosenGene != geneName) { return; }
         float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
@@ -51,15 +118,16 @@ public class StatisticsDispaly : MonoBehaviour
             if (value > maxVal) maxVal = value;
             sum += value;
         }
-        float avg = sum / (float)valueCount;
-        _averageLabel.text = "Avg: " + avg;
 
-        RedrawHistogram(recordValues, minVal, maxVal, avg);
+        float avg = sum / (float)valueCount;
+        geneAverageLabel.text = "Avg: " + avg;
+
+        RedrawHistogram(recordValues, minVal, maxVal);
     }
 
-    void RedrawHistogram(float[] input, float minValue, float maxValue, float avg)
+    void RedrawHistogram(float[] input, float minValue, float maxValue)
     {
-        _barCanvas.Clear();
+        geneHistogramCanvas.Clear();
 
         int valueCount = input.Count();
         int bins = 10;
@@ -78,10 +146,7 @@ public class StatisticsDispaly : MonoBehaviour
             counts[b]++;
         }
 
-        int maxCount = 0;
-        foreach (int c in counts) {
-            if (c > maxCount) { maxCount = c; }
-        }
+        int maxCount = counts.Max();
         if (maxCount == 0) return;
 
         for (int i = 0; i < bins; i++)
@@ -93,17 +158,54 @@ public class StatisticsDispaly : MonoBehaviour
             bar.style.height = new StyleLength(new Length(frac * 100f, LengthUnit.Percent));
             bar.tooltip = $"[{minValue + i * interval:F2} – {maxValue + (i + 1) * interval:F2}]\nCount: {counts[i]}";
 
-            _barCanvas.Add(bar);
+            geneHistogramCanvas.Add(bar);
         }
     }
 
-    void PopulateDropdown()
+    void DrawPopulationChart(MeshGenerationContext ctx)
     {
-        string previous = _geneDropdown.value;
-        var genes = Statistics.GetAllGenesNames();
-        _geneDropdown.choices = genes;
-        _geneDropdown.SetValueWithoutNotify(genes.Contains(previous) ? previous : genes[0]);
+        SortedDictionary<float,float> history = Statistics.GetPopulationHistory(chosenCreature);
+        
+        float w = populationChartCanvas.resolvedStyle.width;
+        float h = populationChartCanvas.resolvedStyle.height;
+        if (w <= 0 || h <= 0 || history.Count < 2) return;
 
-        chosenGene = _geneDropdown.value;
+        float maxValue = history.Values.Max();
+
+        List<Vector2> points = new List<Vector2>();
+        int counter = 1;
+        foreach(var pair in history)
+        {
+            float x = counter * w / history.Count;
+            float y = h - (pair.Value / maxValue * h);
+            points.Add(new Vector2(x,y));
+            counter++;
+        }
+
+        var painter = ctx.painter2D;
+
+        painter.strokeColor = lineColor;
+        painter.lineWidth   = lineWidth;
+        painter.lineCap     = LineCap.Round;
+        painter.lineJoin    = LineJoin.Round;
+
+        painter.BeginPath();
+        painter.MoveTo(new Vector2(0,h));
+        foreach(var point in points)
+        {
+            painter.LineTo(point);
+        }
+        painter.Stroke();
+
+        foreach (var pt in points)
+        {
+            // coloured centre
+            painter.fillColor = Color.black;
+            painter.BeginPath();
+            painter.Arc(pt, 5f * 0.5f, 0, 360);
+            painter.Fill();
+        }
+
+        
     }
 }
