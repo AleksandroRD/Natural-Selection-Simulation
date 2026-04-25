@@ -1,15 +1,17 @@
-using System.Reflection.Emit;
 using UnityEngine;
+
+public enum MovementMode { None, Destination, Direction }
 
 [RequireComponent(typeof(Rigidbody))]
 public class Muscles : MonoBehaviour
 {
     public float MovementSpeed {get; private set;}
     private readonly float targetPositionMargin = 0.15f;
-
-    private readonly float rotationSpeed = 1f;
+    private readonly float rotationSpeed = 2f;
     private Rigidbody rb;
+    public MovementMode CurrentMode { get; private set; } = MovementMode.None;
     private Vector3 currentDestination;
+    private Vector3 currentDirection;
     public bool IsMoving {get; private set;} = false;
 
     void Awake()
@@ -25,6 +27,7 @@ public class Muscles : MonoBehaviour
     public void MoveTo(Vector3 destination)
     {
         currentDestination = destination;
+        CurrentMode = MovementMode.Destination;
         IsMoving = true;
     }
 
@@ -32,7 +35,33 @@ public class Muscles : MonoBehaviour
     {
         MoveTo(target.position);
     }
-    
+
+    public void FleeFrom(Vector3 threat)
+    {
+        Vector3 direction = (transform.position - threat).normalized;
+        MoveInDirectionIntern(direction);
+    }
+
+    public void MoveInDirection(Vector3 direction)
+    {
+        currentDirection = direction;
+        CurrentMode = MovementMode.Direction;
+        IsMoving = true;
+    }
+
+    void MoveInDirectionIntern(Vector3 direction)
+    {
+        direction.y = 0f;
+        direction = direction.normalized;
+
+        if (direction == Vector3.zero) return;
+        Vector3 targetVelocity = direction * MovementSpeed;
+        rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, targetVelocity, MovementSpeed * 5f * Time.fixedDeltaTime);
+
+        Quaternion targetRot = Quaternion.LookRotation(direction);
+        rb.MoveRotation(Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime));
+    }
+
     public bool HasArrived()
     {
         return Vector3.Distance(transform.position, currentDestination) <= targetPositionMargin;
@@ -41,27 +70,23 @@ public class Muscles : MonoBehaviour
     public void Stop()
     {
         IsMoving = false;
+        CurrentMode = MovementMode.None;
         rb.linearVelocity = Vector3.zero;
-        currentDestination = transform.position;
+        currentDestination = transform.position; 
     }
-
+    
     void FixedUpdate()
     {
         if (!IsMoving) return;
-
-        if (HasArrived())
+    
+        if (CurrentMode == MovementMode.Destination)
         {
-            Stop();
-            return;
+            if (HasArrived()) { Stop(); return; }
+            MoveInDirectionIntern((currentDestination - transform.position).normalized);
         }
-
-        Vector3 direction = (currentDestination - transform.position).normalized;
-        direction.y = 0f;
-        rb.linearVelocity = direction * MovementSpeed;
-
-        if (direction == Vector3.zero) { return; }
-
-        Quaternion targetRot = Quaternion.LookRotation(direction);
-        rb.MoveRotation(Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime));
+        else if (CurrentMode == MovementMode.Direction)
+        {
+            MoveInDirectionIntern(currentDirection);
+        }
     }
 }

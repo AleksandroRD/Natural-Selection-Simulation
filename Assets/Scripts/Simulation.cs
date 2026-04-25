@@ -23,6 +23,11 @@ public class Simulation : MonoBehaviour
     
     [SerializeField]
     private float timeToSpawnCarrot = 1;
+
+    public static Bounds GetSimulationBounds()
+    {
+        return simulationBoundsInternal;
+    }
     void Start()
     {
         Time.timeScale = timeScale;
