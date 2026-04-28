@@ -4,14 +4,14 @@ public class WanderBehavior : Behaviour
 {
     private Muscles muscles;
 
-    float wandertheta = 0;
-    float wanderRadius = 1.5f; 
-    float diversionStartDistance = 1;
+    private float wandertheta = 0;
+    private float wanderRadius = 1.5f; 
+    private float diversionStartDistance = 1.5f;
 
     public WanderBehavior(Muscles muscles)
     {
         this.muscles = muscles;
-        this.wandertheta = Random.Range(0,2*Mathf.PI);
+        this.wandertheta = Random.Range(-180,180);
     }
 
     ~WanderBehavior()
@@ -21,26 +21,32 @@ public class WanderBehavior : Behaviour
 
     public override void Perform()
     {
-        wandertheta += Random.Range(-Mathf.PI / 15,Mathf.PI / 15);
         Vector3 wanderPoint = muscles.transform.position + muscles.transform.forward * 3f;
         Vector3 direction = default;
         Vector3 closestpoint = ClosestPointOnBoundsEdge(Simulation.GetSimulationBounds(), muscles.transform.position);
         
         float distanceToBorder = Vector3.Distance(closestpoint, muscles.transform.position);
-        float diversionPower = (1 - distanceToBorder) * (diversionStartDistance / distanceToBorder);
+        float diversionPower = 1 + (1 - distanceToBorder) * (diversionStartDistance / distanceToBorder);
 
         if(distanceToBorder < diversionStartDistance)
         {
-            direction = (muscles.transform.position - closestpoint).normalized * diversionPower;
+            //angle to apply maximum turn to avoid simulation border
+            wandertheta = 90.0f;
+
+            //making rotation relative to agent
+            Vector3 rotationVector = Quaternion.AngleAxis(wandertheta, Vector3.down) * muscles.transform.forward;
+            wanderPoint += wanderRadius * rotationVector * diversionPower;
         }
         else
-        {            
-            float x = wanderRadius * Mathf.Cos(wandertheta);
-            float z = wanderRadius * Mathf.Sin(wandertheta);
-            wanderPoint += new Vector3(x,0,z);
+        { 
+            wandertheta += Random.Range(-12.0f, 12.0f);
 
-            direction = (wanderPoint - muscles.transform.position).normalized;
+            //making rotation relative to agent           
+            Vector3 rotationVector = Quaternion.AngleAxis(wandertheta, Vector3.down) * muscles.transform.forward;
+            wanderPoint += wanderRadius * rotationVector;
         }
+
+        direction = (wanderPoint - muscles.transform.position).normalized;
 #if UNITY_EDITOR
         Debug.DrawLine(muscles.transform.position, muscles.transform.position + muscles.transform.forward * 3f, Color.yellow);
         // Draw line to wander point
