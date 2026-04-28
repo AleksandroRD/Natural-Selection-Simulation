@@ -4,14 +4,14 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public enum StatisticsDispalyMode
+public enum StatisticsDisplayMode
 {
     Population,
     Gene
 }
 
 [RequireComponent(typeof(UIDocument))]
-public class StatisticsDispaly : MonoBehaviour
+public class StatisticsDisplay : MonoBehaviour
 {
     [SerializeField] private Color lineColor   = new Color(0.27f, 0.71f, 1f);
     [SerializeField] private float lineWidth   = 2.5f;
@@ -28,6 +28,7 @@ public class StatisticsDispaly : MonoBehaviour
     EnumField      modeDropdown;
     VisualElement  geneHistogramRoot;
     VisualElement  populationChartRoot;
+
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
@@ -41,41 +42,23 @@ public class StatisticsDispaly : MonoBehaviour
         geneOverallCountLabel = root.Q<Label>("gene-overall-count-label");
         populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
 
-        modeDropdown.RegisterValueChangedCallback(OnModeDropdownChange);
         geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
 
         populationChartCanvas.generateVisualContent += DrawPopulationChart;
 
-        ChangeMode();
+        Statistics.OnGeneStatisticsUpdated += UpdateGeneHistogram;
+        Statistics.OnPopulationUpdated    += UpdateOverallGeneCount;
+        Statistics.OnPopulationUpdated    += populationChartCanvas.MarkDirtyRepaint;
     }
 
-    void ChangeMode()
+    void OnDisable()
     {
-        if((StatisticsDispalyMode)modeDropdown.value == StatisticsDispalyMode.Gene)
-        {
-            geneHistogramRoot.style.display = DisplayStyle.Flex;
-            populationChartRoot.style.display  = DisplayStyle.None;
-            Statistics.OnPopulationUpdated -= populationChartCanvas.MarkDirtyRepaint;
-
-            Statistics.OnGeneStatisticsUpdated += UpdateGeneHistogram;
-            Statistics.OnPopulationUpdated += UpdateOverallGeneCount;
-        }
-        else
-        {
-            geneHistogramRoot.style.display = DisplayStyle.None;
-            populationChartRoot.style.display  = DisplayStyle.Flex;
-
-            Statistics.OnPopulationUpdated += populationChartCanvas.MarkDirtyRepaint;
-
-            Statistics.OnGeneStatisticsUpdated -= UpdateGeneHistogram;
-            Statistics.OnPopulationUpdated -= UpdateOverallGeneCount;
-        }
-
+        Statistics.OnGeneStatisticsUpdated -= UpdateGeneHistogram;
+        Statistics.OnPopulationUpdated    -= UpdateOverallGeneCount;
+        Statistics.OnPopulationUpdated    -= populationChartCanvas.MarkDirtyRepaint;
+        populationChartCanvas.generateVisualContent -= DrawPopulationChart;
     }
-    void OnModeDropdownChange(ChangeEvent<Enum> evt)
-    {
-        ChangeMode();
-    }
+    
     void PopulateGeneDropdown()
     {
         string previous = geneDropdown.value;
@@ -95,9 +78,10 @@ public class StatisticsDispaly : MonoBehaviour
             UpdateGeneHistogram(chosenGene);
         }
     }
+
     void UpdateOverallGeneCount()
     {
-        geneOverallCountLabel.text = "N - " + Statistics.GetCurrentPopulation("Rabbit").ToString();
+        geneOverallCountLabel.text = $"N — {Statistics.GetCurrentPopulation(chosenCreature)}";
     }
 
     void UpdateGeneHistogram(string geneName)
@@ -106,7 +90,7 @@ public class StatisticsDispaly : MonoBehaviour
         
         if(chosenGene != geneName) { return; }
         float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
-        int valueCount = recordValues.Count();
+        int valueCount = recordValues.Length;
 
         //prevents division by 0
         if(valueCount < 2){ return; }
@@ -120,7 +104,7 @@ public class StatisticsDispaly : MonoBehaviour
         }
 
         float avg = sum / (float)valueCount;
-        geneAverageLabel.text = "Avg: " + avg;
+        geneAverageLabel.text = $"Avg: {avg:F2}";
 
         RedrawHistogram(recordValues, minVal, maxVal);
     }
@@ -129,7 +113,7 @@ public class StatisticsDispaly : MonoBehaviour
     {
         geneHistogramCanvas.Clear();
 
-        int valueCount = input.Count();
+        int valueCount = input.Length;
         int bins = 10;
 
         if(valueCount < bins)
@@ -156,7 +140,7 @@ public class StatisticsDispaly : MonoBehaviour
             VisualElement bar = new VisualElement();
             bar.AddToClassList("bar");
             bar.style.height = new StyleLength(new Length(frac * 100f, LengthUnit.Percent));
-            bar.tooltip = $"[{minValue + i * interval:F2} – {maxValue + (i + 1) * interval:F2}]\nCount: {counts[i]}";
+            bar.tooltip = $"[{minValue + i * interval:F2} – {minValue + (i + 1) * interval:F2}]...";
 
             geneHistogramCanvas.Add(bar);
         }

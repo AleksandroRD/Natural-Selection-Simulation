@@ -2,13 +2,13 @@
     <Style src="project://database/Assets/UI/Statistics.uss?fileID=7433441132597879392&amp;guid=a8d5793e51b16634ca7a3e65e854e1eb&amp;type=3#Statistics"/>
     <ui:VisualElement name="root" style="flex-grow: 1;">
         <ui:VisualElement style="flex-grow: 1; bottom: 0; right: 0; position: absolute; height: 40%; width: 35%;">
-            <ui:VisualElement name="stattistics-top" style="flex-grow: 0; width: auto; height: 35px; flex-direction: row;">
+            <ui:VisualElement name="stattistics-top" style="flex-grow: 0; width: auto; height: 35px; flex-direction: row; display: flex;">
                 <ui:Label text="Mode" class="text"/>
                 <ui:EnumField value="Population" type="StatisticsDispalyMode, Assembly-CSharp" name="mode-dropdown"/>
                 <ui:Label text="Animal" class="text"/>
                 <ui:DropdownField name="animal-dropdown"/>
             </ui:VisualElement>
-            <ui:VisualElement name="gene-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; bottom: auto; right: auto; aspect-ratio: auto; opacity: 1; display: none;">
+            <ui:VisualElement name="gene-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; bottom: auto; right: auto; aspect-ratio: auto; opacity: 1; display: flex;">
                 <ui:VisualElement name="gene-chart-top" style="flex-grow: 0; height: auto; flex-direction: row;">
                     <ui:Label text="Gene" class="text"/>
                     <ui:DropdownField name="gene-dropdown"/>
@@ -28,7 +28,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="population-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; bottom: auto; right: auto; aspect-ratio: auto; opacity: 1; display: flex;">
+            <ui:VisualElement name="population-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; bottom: auto; right: auto; aspect-ratio: auto; opacity: 1; display: none;">
                 <ui:VisualElement name="population-chart-top" style="flex-grow: 0; height: auto; flex-direction: row;"/>
                 <ui:VisualElement name="population-graph" style="flex-grow: 1; flex-direction: row;">
                     <ui:VisualElement style="flex-grow: 0; height: auto; width: 60px; flex-direction: row;">
