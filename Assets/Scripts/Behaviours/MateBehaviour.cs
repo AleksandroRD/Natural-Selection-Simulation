@@ -1,6 +1,6 @@
 using UnityEngine;
 
-class MateBehaviour : Behaviour
+class MateBehaviour : WanderBehavior
 {
     private readonly SensoryNervousSystem sensorySystem;
     private readonly Muscles muscles;
@@ -11,7 +11,7 @@ class MateBehaviour : Behaviour
     private float matingTime = 3f;
     private float matingTimer = 0;
 
-    public MateBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Animal animal)
+    public MateBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Animal animal) : base(muscles)
     {
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
@@ -25,17 +25,17 @@ class MateBehaviour : Behaviour
     {
         Rabbit nearestMate = sensorySystem.LookFor<Rabbit>();
         
+        if(nearestMate == null)
+        {
+            Wander();
+        }
+
         if (nearestMate != null && nearestMate.IsReadyToMate() && nearestMate.Gender != animal.Gender)
         {
             currentDestination = nearestMate.transform.position;
         }
-        
-        if(nearestMate == null && muscles.HasArrived())
-        {
-            currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
-        }
 
-        if(nearestMate != null && muscles.HasArrived())
+        if(nearestMate != null && muscles.HasArrived() && nearestMate.Gender != animal.Gender)
         {
             matingTimer += Time.deltaTime;
 

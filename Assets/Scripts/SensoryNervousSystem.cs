@@ -17,6 +17,7 @@ public class SensoryNervousSystem : MonoBehaviour
         T closest = default;
 
         foreach(var collider in colliders){
+            if(collider.gameObject == this.gameObject) { continue; }
             T newOne = collider.gameObject.GetComponent<T>();
             if(newOne == null) { continue; }
 
@@ -34,9 +35,6 @@ public class SensoryNervousSystem : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(0f, 1f, 0.4f, 0.15f);
-        Gizmos.DrawSphere(transform.position, Radius);
-
         Gizmos.color = new Color(0f, 1f, 0.4f, 0.9f);
         Gizmos.DrawWireSphere(transform.position, Radius);
     }

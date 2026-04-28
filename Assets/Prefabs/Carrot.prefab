@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bed9f2eb4d73f3d49b16805808ec2295, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Food
-  minValue: 25
+  minValue: 35
   maxValue: 50
 --- !u!136 &6965709078928407113
 CapsuleCollider:

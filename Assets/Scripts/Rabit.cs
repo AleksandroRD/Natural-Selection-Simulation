@@ -47,7 +47,7 @@ public class Rabbit : Animal
         SexDrive = genome.GetGeneValue("Sex Drive");
         muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
-        SetBehaviour( new WanderBehavior(muscles));
+        SetBehaviour( new RoamingBehaviour(muscles));
 
         Statistics.LogPopulation("Rabbit", true);
     }
@@ -84,9 +84,9 @@ public class Rabbit : Animal
         { 
             SetBehaviour(new MateBehaviour(sensorySystem, muscles, this));
         }
-        else if (desiredBehaviour == typeof(WanderBehavior))
+        else if (desiredBehaviour == typeof(RoamingBehaviour))
         {
-            SetBehaviour(new WanderBehavior(muscles));
+            SetBehaviour(new RoamingBehaviour(muscles));
         }
         
     }
@@ -97,13 +97,15 @@ public class Rabbit : Animal
         {
             return typeof(SearchForFoodBehaviour);
             
-        }else if (IsReadyToMate() && CurrentEnergy > 50){
+        }
+        else if (IsReadyToMate() && CurrentEnergy > 50)
+        {
              
             return typeof(MateBehaviour);
         }
         else
         {
-            return typeof(WanderBehavior);
+            return typeof(RoamingBehaviour);
         }
     }
 

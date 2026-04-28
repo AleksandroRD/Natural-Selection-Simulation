@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WanderBehavior : Behaviour
+public abstract class WanderBehavior : Behaviour
 {
     private Muscles muscles;
 
@@ -19,7 +19,7 @@ public class WanderBehavior : Behaviour
         muscles.Stop();
     }
 
-    public override void Perform()
+    protected void Wander()
     {
         Vector3 wanderPoint = muscles.transform.position + muscles.transform.forward * 3f;
         Vector3 direction = default;
@@ -31,8 +31,7 @@ public class WanderBehavior : Behaviour
         if(distanceToBorder < diversionStartDistance)
         {
             //angle to apply maximum turn to avoid simulation border
-            wandertheta = 90.0f;
-
+            wandertheta = Mathf.Sign(wandertheta) * 90.0f;
             //making rotation relative to agent
             Vector3 rotationVector = Quaternion.AngleAxis(wandertheta, Vector3.down) * muscles.transform.forward;
             wanderPoint += wanderRadius * rotationVector * diversionPower;
@@ -63,12 +62,10 @@ public static Vector3 ClosestPointOnBoundsEdge(Bounds bounds, Vector3 point)
 {
     float distLeft   = point.x - bounds.min.x;
     float distRight  = bounds.max.x - point.x;
-    float distBottom = point.y - bounds.min.y;
-    float distTop    = bounds.max.y - point.y;
     float distBack   = point.z - bounds.min.z;
     float distFront  = bounds.max.z - point.z;
 
-    float minDist = Mathf.Min(distLeft, distRight, distBottom, distTop, distBack, distFront);
+    float minDist = Mathf.Min(distLeft, distRight, distBack, distFront);
 
     if (minDist == distLeft)
     {
@@ -77,14 +74,6 @@ public static Vector3 ClosestPointOnBoundsEdge(Bounds bounds, Vector3 point)
     else if (minDist == distRight)
     {
         return new Vector3(bounds.max.x, point.y, point.z);
-    }
-    else if (minDist == distBottom)
-    {
-        return new Vector3(point.x, bounds.min.y, point.z);
-    }
-    else if (minDist == distTop)
-    {
-        return new Vector3(point.x, bounds.max.y, point.z);
     }
     else if (minDist == distBack)
     {

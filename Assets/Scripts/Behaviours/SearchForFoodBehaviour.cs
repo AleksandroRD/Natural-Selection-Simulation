@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-class SearchForFoodBehaviour : Behaviour
+class SearchForFoodBehaviour : WanderBehavior
 {
     private readonly SensoryNervousSystem sensorySystem;
     private readonly Muscles muscles;
@@ -13,7 +13,7 @@ class SearchForFoodBehaviour : Behaviour
     private float wanderRadius = 5;
 
     Action<float> eatingFunction;
-    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction)
+    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction) : base(muscles)
     {
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
@@ -34,6 +34,7 @@ class SearchForFoodBehaviour : Behaviour
         if(nearestFood != null && !nearestFood.isBeingConsumed)
         {
             currentDestination = nearestFood.transform.position;
+            muscles.MoveTo(currentDestination);
         }
 
         //found food and arrived at foods location
@@ -50,12 +51,9 @@ class SearchForFoodBehaviour : Behaviour
             }
         }
         
-        //if we creature stoped moving and see no food around
-        if(nearestFood == null && muscles.HasArrived())
+        if(nearestFood == null)
         {
-            currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
+            Wander();
         }
-
-        muscles.MoveTo(currentDestination);
     }
 }
