@@ -10,16 +10,12 @@ class SearchForFoodBehaviour : WanderBehavior
     private float eatingTime = 0.5f;
     private float eatingTimer = 0;
 
-    private float wanderRadius = 5;
-
     Action<float> eatingFunction;
     public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction) : base(muscles)
     {
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
         this.eatingFunction = eatingFunction;
-
-        currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
     }
 
     ~SearchForFoodBehaviour()

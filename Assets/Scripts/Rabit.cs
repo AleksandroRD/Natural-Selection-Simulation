@@ -61,7 +61,9 @@ public class Rabbit : Animal
     {
         Genome childGenome = Genome.Recombine(otherGenome);
 
-        GameObject childGameObject = GameObject.Instantiate(this.gameObject);
+        Vector2 newPosition = UnityEngine.Random.onUnitCircle;
+        Vector2 newRotation = UnityEngine.Random.onUnitCircle;
+        GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0,newPosition.y), Quaternion.LookRotation(newRotation));
 
         childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
 

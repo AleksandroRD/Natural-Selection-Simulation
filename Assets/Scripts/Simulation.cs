@@ -61,20 +61,6 @@ public class Simulation : MonoBehaviour
         timer = 0;
     }
 
-    public static Vector3 PickRandomDectination(Vector3 origin, float radius)
-    {
-        Vector3 offset;
-        
-        do
-        {
-            Vector2 randomCircle = Random.insideUnitCircle * radius;
-            offset = new Vector3(randomCircle.x, 0.0f, randomCircle.y);
-        }
-        while(!simulationBoundsInternal.Contains(origin + offset));
-        
-        return origin + offset;
-    }
-
     public static Vector3 GetRandomPostion()
     {
         return new Vector3(

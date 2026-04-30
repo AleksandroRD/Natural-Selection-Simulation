@@ -6,7 +6,6 @@ class MateBehaviour : WanderBehavior
     private readonly Muscles muscles;
     private readonly Animal animal;
     private Vector3 currentDestination;
-    private float wanderRadius = 5;
 
     private float matingTime = 3f;
     private float matingTimer = 0;
@@ -16,9 +15,6 @@ class MateBehaviour : WanderBehavior
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
         this.animal = animal;
-
-        currentDestination = Simulation.PickRandomDectination(muscles.transform.position, wanderRadius);
-
     }
 
     public override void Perform()
