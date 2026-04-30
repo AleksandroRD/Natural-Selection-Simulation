@@ -23,6 +23,7 @@ public class StatisticsDisplay : MonoBehaviour
     DropdownField  geneDropdown;
     Label          geneAverageLabel;
     Label          geneOverallCountLabel;
+    Label          geneTooltipLabel;
 
     VisualElement  populationChartCanvas;
     EnumField      modeDropdown;
@@ -32,7 +33,7 @@ public class StatisticsDisplay : MonoBehaviour
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
-
+        geneTooltipLabel = root.Q<Label>("gene-chart-tootip-label");
         modeDropdown = root.Q<EnumField>("mode-dropdown");
         geneHistogramRoot = root.Q<VisualElement>("gene-chart");
         populationChartRoot = root.Q<VisualElement>("population-chart");
@@ -43,7 +44,7 @@ public class StatisticsDisplay : MonoBehaviour
         populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
 
         geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
-
+        modeDropdown.RegisterValueChangedCallback(ChangeMode);
         populationChartCanvas.generateVisualContent += DrawPopulationChart;
 
         Statistics.OnGeneStatisticsUpdated += UpdateGeneHistogram;
@@ -53,12 +54,27 @@ public class StatisticsDisplay : MonoBehaviour
 
     void OnDisable()
     {
+        populationChartCanvas.generateVisualContent -= DrawPopulationChart;
+
         Statistics.OnGeneStatisticsUpdated -= UpdateGeneHistogram;
         Statistics.OnPopulationUpdated    -= UpdateOverallGeneCount;
         Statistics.OnPopulationUpdated    -= populationChartCanvas.MarkDirtyRepaint;
-        populationChartCanvas.generateVisualContent -= DrawPopulationChart;
     }
     
+    void ChangeMode(ChangeEvent<Enum> evt)
+    {
+        if((StatisticsDisplayMode)evt.newValue == StatisticsDisplayMode.Gene)
+        {
+            geneHistogramRoot.style.display = DisplayStyle.Flex;
+            populationChartRoot.style.display = DisplayStyle.None;
+        }
+        else if((StatisticsDisplayMode)evt.newValue == StatisticsDisplayMode.Population)
+        {
+            geneHistogramRoot.style.display = DisplayStyle.None;
+            populationChartRoot.style.display = DisplayStyle.Flex;
+        }
+    }
+
     void PopulateGeneDropdown()
     {
         string previous = geneDropdown.value;
@@ -140,10 +156,23 @@ public class StatisticsDisplay : MonoBehaviour
             VisualElement bar = new VisualElement();
             bar.AddToClassList("bar");
             bar.style.height = new StyleLength(new Length(frac * 100f, LengthUnit.Percent));
-            bar.tooltip = $"[{minValue + i * interval:F2} – {minValue + (i + 1) * interval:F2}]...";
+            bar.tooltip = $"[{minValue + i * interval:F3} – {minValue + (i + 1) * interval:F3}] N = {counts[i]}";
+            bar.RegisterCallback<PointerEnterEvent>(ShowGeneTooptip);
+            bar.RegisterCallback<PointerLeaveEvent>(HideGeneTooptip);
 
             geneHistogramCanvas.Add(bar);
         }
+    }
+
+    void ShowGeneTooptip(PointerEnterEvent evt)
+    {
+        VisualElement bar = (VisualElement)evt.currentTarget;
+        geneTooltipLabel.text = bar.tooltip;
+    }
+
+    void HideGeneTooptip(PointerLeaveEvent evt)
+    {
+        geneTooltipLabel.text = "";
     }
 
     void DrawPopulationChart(MeshGenerationContext ctx)
