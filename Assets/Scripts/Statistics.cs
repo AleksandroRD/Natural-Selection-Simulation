@@ -35,6 +35,12 @@ public class Statistics : MonoBehaviour
         return populationHistory[animalName];
     }
 
+    public static SortedDictionary<float, float> GetGeneAvarageHistory(string geneName)
+    {
+        if(!geneHistoryAvarage.ContainsKey(geneName)) { return null; }
+        return geneHistoryAvarage[geneName];
+    }
+
     public static void LogGene(string geneName, Guid id, float value)
     {
         if (!geneRecords.ContainsKey(geneName) || !geneHistoryAvarage.ContainsKey(geneName) )

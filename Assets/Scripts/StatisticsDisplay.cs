@@ -18,36 +18,49 @@ public class StatisticsDisplay : MonoBehaviour
     string chosenGene = "Speed Gene";
 
     string chosenCreature = "Rabbit";
+    bool showGeneHistory = false;
+    EnumField      modeDropdown;
 
-    VisualElement  geneHistogramCanvas;
+    VisualElement  geneHistogramRoot;
     DropdownField  geneDropdown;
-    Label          geneAverageLabel;
     Label          geneOverallCountLabel;
     Label          geneTooltipLabel;
+    Label          geneAverageLabel;
+    Toggle         geneHistoryToggle;
+    VisualElement  geneDistributionCanvas;
+    VisualElement  geneHistoryCanvas;
+    VisualElement  geneDistributionRoot;
+    VisualElement  geneHistoryRoot;
 
     VisualElement  populationChartCanvas;
-    EnumField      modeDropdown;
-    VisualElement  geneHistogramRoot;
     VisualElement  populationChartRoot;
 
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
-        geneTooltipLabel = root.Q<Label>("gene-chart-tootip-label");
         modeDropdown = root.Q<EnumField>("mode-dropdown");
+
         geneHistogramRoot = root.Q<VisualElement>("gene-chart");
-        populationChartRoot = root.Q<VisualElement>("population-chart");
-        geneHistogramCanvas    = root.Q<VisualElement>("gene-histogram-canvas");
-        geneAverageLabel = root.Q<Label>("gene-average-label");
         geneDropdown = root.Q<DropdownField>("gene-dropdown");
         geneOverallCountLabel = root.Q<Label>("gene-overall-count-label");
+        geneTooltipLabel = root.Q<Label>("gene-chart-tootip-label");
+        geneAverageLabel = root.Q<Label>("gene-average-label");
+        geneHistoryToggle = root.Q<Toggle>("gene-history-toggle");
+        geneDistributionCanvas    = root.Q<VisualElement>("gene-distribution-canvas");
+        geneHistoryCanvas = root.Q<VisualElement>("gene-history-chart-canvas");
+        geneHistoryRoot = root.Q<VisualElement>("gene-history-chart");
+        geneDistributionRoot = root.Q<VisualElement>("gene-distribution-chart");
+
+        populationChartRoot = root.Q<VisualElement>("population-chart");
         populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
 
         geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
+        geneHistoryToggle.RegisterValueChangedCallback(ToggleHistory);
         modeDropdown.RegisterValueChangedCallback(ChangeMode);
-        populationChartCanvas.generateVisualContent += DrawPopulationChart;
 
-        Statistics.OnGeneStatisticsUpdated += UpdateGeneHistogram;
+        populationChartCanvas.generateVisualContent += DrawPopulationChart;
+        geneHistoryCanvas.generateVisualContent += DrawGeneHistoryChart;
+        Statistics.OnGeneStatisticsUpdated += UpdateGeneStatistics;
         Statistics.OnPopulationUpdated    += UpdateOverallGeneCount;
         Statistics.OnPopulationUpdated    += populationChartCanvas.MarkDirtyRepaint;
     }
@@ -56,11 +69,28 @@ public class StatisticsDisplay : MonoBehaviour
     {
         populationChartCanvas.generateVisualContent -= DrawPopulationChart;
 
-        Statistics.OnGeneStatisticsUpdated -= UpdateGeneHistogram;
+        Statistics.OnGeneStatisticsUpdated -= UpdateGeneStatistics;
         Statistics.OnPopulationUpdated    -= UpdateOverallGeneCount;
         Statistics.OnPopulationUpdated    -= populationChartCanvas.MarkDirtyRepaint;
     }
-    
+    void ToggleHistory(ChangeEvent<bool> evt)
+    {
+        if(evt.newValue == true)
+        {
+            geneDistributionRoot.style.display = DisplayStyle.None;
+            geneHistoryRoot.style.display = DisplayStyle.Flex;
+            
+            showGeneHistory = true;
+        }
+        else
+        {
+            geneDistributionRoot.style.display = DisplayStyle.Flex;
+            geneHistoryRoot.style.display = DisplayStyle.None;
+
+            showGeneHistory = false;
+        }
+    }
+
     void ChangeMode(ChangeEvent<Enum> evt)
     {
         if((StatisticsDisplayMode)evt.newValue == StatisticsDisplayMode.Gene)
@@ -91,7 +121,7 @@ public class StatisticsDisplay : MonoBehaviour
 
         if(evt.newValue != evt.previousValue)
         {
-            UpdateGeneHistogram(chosenGene);
+            UpdateGeneStatistics(chosenGene);
         }
     }
 
@@ -100,34 +130,42 @@ public class StatisticsDisplay : MonoBehaviour
         geneOverallCountLabel.text = $"N — {Statistics.GetCurrentPopulation(chosenCreature)}";
     }
 
-    void UpdateGeneHistogram(string geneName)
+    void UpdateGeneStatistics(string geneName)
     {
         PopulateGeneDropdown();
-        
+
         if(chosenGene != geneName) { return; }
-        float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
-        int valueCount = recordValues.Length;
 
-        //prevents division by 0
-        if(valueCount < 2){ return; }
-
-        float minVal = float.MaxValue, maxVal = float.MinValue, sum = 0f;
-        foreach (var value in recordValues)
+        if (showGeneHistory)
         {
-            if (value < minVal) minVal = value;
-            if (value > maxVal) maxVal = value;
-            sum += value;
+            geneHistoryCanvas.MarkDirtyRepaint();
         }
+        else
+        {
+            float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
+            int valueCount = recordValues.Length;
 
-        float avg = sum / (float)valueCount;
-        geneAverageLabel.text = $"Avg: {avg:F2}";
+            //prevents division by 0
+            if(valueCount < 2){ return; }
 
-        RedrawHistogram(recordValues, minVal, maxVal);
+            float minVal = float.MaxValue, maxVal = float.MinValue, sum = 0f;
+            foreach (var value in recordValues)
+            {
+                if (value < minVal) minVal = value;
+                if (value > maxVal) maxVal = value;
+                sum += value;
+            }
+
+            float avg = sum / (float)valueCount;
+            geneAverageLabel.text = $"Avg: {avg:F2}";
+
+            RedrawHistogram(recordValues, minVal, maxVal);
+        }
     }
 
     void RedrawHistogram(float[] input, float minValue, float maxValue)
     {
-        geneHistogramCanvas.Clear();
+        geneDistributionCanvas.Clear();
 
         int valueCount = input.Length;
         int bins = 10;
@@ -160,7 +198,7 @@ public class StatisticsDisplay : MonoBehaviour
             bar.RegisterCallback<PointerEnterEvent>(ShowGeneTooptip);
             bar.RegisterCallback<PointerLeaveEvent>(HideGeneTooptip);
 
-            geneHistogramCanvas.Add(bar);
+            geneDistributionCanvas.Add(bar);
         }
     }
 
@@ -219,6 +257,50 @@ public class StatisticsDisplay : MonoBehaviour
             painter.Fill();
         }
 
+    }
+
+    void DrawGeneHistoryChart(MeshGenerationContext ctx)
+    {
+        SortedDictionary<float,float> history = Statistics.GetGeneAvarageHistory(chosenGene);
         
+        float w = geneHistoryCanvas.resolvedStyle.width;
+        float h = geneHistoryCanvas.resolvedStyle.height;
+        if (w <= 0 || h <= 0 || history.Count < 2) { return; }
+
+        float maxValue = history.Values.Max();
+
+        List<Vector2> points = new List<Vector2>();
+        int counter = 1;
+        foreach(var pair in history)
+        {
+            float x = counter * w / history.Count;
+            float y = h - (pair.Value / maxValue * h);
+            points.Add(new Vector2(x,y));
+            counter++;
+        }
+
+        var painter = ctx.painter2D;
+
+        painter.strokeColor = lineColor;
+        painter.lineWidth   = lineWidth;
+        painter.lineCap     = LineCap.Round;
+        painter.lineJoin    = LineJoin.Round;
+
+        painter.BeginPath();
+        painter.MoveTo(new Vector2(0,h));
+        foreach(var point in points)
+        {
+            painter.LineTo(point);
+        }
+        painter.Stroke();
+
+        foreach (var pt in points)
+        {
+            // coloured centre
+            painter.fillColor = Color.black;
+            painter.BeginPath();
+            painter.Arc(pt, 5f * 0.5f, 0, 360);
+            painter.Fill();
+        }
     }
 }

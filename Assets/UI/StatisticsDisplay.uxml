@@ -12,10 +12,12 @@
                 <ui:VisualElement name="gene-chart-top" style="flex-grow: 0; height: auto; flex-direction: row;">
                     <ui:Label text="Gene" class="text"/>
                     <ui:DropdownField name="gene-dropdown"/>
+                    <ui:Label text="History" class="text"/>
+                    <ui:Toggle name="gene-history-toggle"/>
                     <ui:Label text="AVG -" name="gene-average-label" class="text"/>
                     <ui:Label text="N -" name="gene-overall-count-label" class="text" style="position: absolute; right: 0%; bottom: 0%;"/>
                 </ui:VisualElement>
-                <ui:VisualElement name="gene-histogram" style="flex-grow: 1; flex-direction: row;">
+                <ui:VisualElement name="gene-distribution-chart" style="flex-grow: 1; flex-direction: row; display: flex;">
                     <ui:VisualElement style="flex-grow: 0; height: auto; width: 60px; flex-direction: row;">
                         <ui:Label text="Count" class="text" style="rotate: -90deg;"/>
                     </ui:VisualElement>
@@ -23,9 +25,23 @@
                         <ui:VisualElement name="gene-chart-tootip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 2px; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70);">
                             <ui:Label text="" name="gene-chart-tootip-label" style="flex-grow: 1; -unity-font-style: bold; font-size: 16px; -unity-text-align: middle-left;"/>
                         </ui:VisualElement>
-                        <ui:VisualElement name="gene-histogram-canvas" style="flex-grow: 1; flex-shrink: 1; flex-direction: row; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; align-items: flex-end;"/>
+                        <ui:VisualElement name="gene-distribution-canvas" style="flex-grow: 1; flex-shrink: 1; flex-direction: row; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; align-items: flex-end;"/>
                         <ui:VisualElement style="flex-grow: 0; height: 60px;">
                             <ui:Label text="Value" class="text"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="gene-history-chart" style="flex-grow: 1; flex-direction: row; display: none;">
+                    <ui:VisualElement style="flex-grow: 0; height: auto; width: 60px; flex-direction: row;">
+                        <ui:Label text="Avarage" class="text" style="rotate: -90deg;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement style="flex-grow: 1;">
+                        <ui:VisualElement name="gene-history-chart-tooltip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 2px; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70);">
+                            <ui:Label text="" name="gene-chart-tootip-label" style="flex-grow: 1; -unity-font-style: bold; font-size: 16px; -unity-text-align: middle-left;"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="gene-history-chart-canvas" style="flex-grow: 1; flex-shrink: 1; flex-direction: row; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; align-items: flex-end;"/>
+                        <ui:VisualElement style="flex-grow: 0; height: 60px;">
+                            <ui:Label text="Time" class="text"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
