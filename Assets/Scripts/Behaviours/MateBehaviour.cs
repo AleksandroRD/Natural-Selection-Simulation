@@ -5,59 +5,73 @@ class MateBehaviour : WanderBehavior
     private readonly SensoryNervousSystem sensorySystem;
     private readonly Muscles muscles;
     private readonly Animal animal;
-    private Vector3 currentDestination;
+    private readonly Timer timer;
 
-    private float matingTime = 3f;
-    private float matingTimer = 0;
+    private bool isCurrentlyMating = false;
+    private const float matingTime = 3f;
 
+    Rabbit nearestMate;
     public MateBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Animal animal) : base(muscles)
     {
         this.sensorySystem = sensorySystem;
         this.muscles = muscles;
         this.animal = animal;
+
+        timer = new Timer(matingTime);
+        timer.OnTimerFinished += () => { 
+            Mate(nearestMate); 
+            nearestMate = null;
+            isCurrentlyMating = false;
+        };
     }
 
     public override void Perform()
     {
-        Rabbit nearestMate = sensorySystem.LookFor<Rabbit>();
+        nearestMate = sensorySystem.LookFor<Rabbit>();
         
-        if(nearestMate == null)
+        if (nearestMate == null || !IsCompatibleMate(nearestMate))
         {
             Wander();
+            return;
         }
 
-        if (nearestMate != null && nearestMate.IsReadyToMate() && nearestMate.Gender != animal.Gender)
+        muscles.MoveTo(nearestMate.transform.position);
+
+        if (!muscles.HasArrived()){ return; }
+        
+        if(isCurrentlyMating == false)
         {
-            currentDestination = nearestMate.transform.position;
+            timer.Start();
+
+            isCurrentlyMating = true;
         }
-
-        if(nearestMate != null && muscles.HasArrived() && nearestMate.Gender != animal.Gender)
-        {
-            matingTimer += Time.deltaTime;
-
-            if(matingTimer < matingTime) { return; }
-            
-            if(animal.Gender == Gender.Male)
-            {
-                animal.Replicate();
-            }
-
-            if(animal.Gender == Gender.Female)
-            {
-                System.Random rnd = new System.Random();
-                int numberOfChildren = rnd.Next(0,4);
-
-                for(int i = 0; i < numberOfChildren; i++)
-                {    
-                    animal.Replicate(nearestMate.Genome);
-                }    
-            }
-
-            matingTimer = 0;
-            
-        }
-
-        muscles.MoveTo(currentDestination);
+#if UNITY_EDITOR
+    Debug.DrawLine(muscles.transform.position, nearestMate.transform.position, Color.red);
+#endif
+        timer.Tick();
     }
 
+    private bool IsCompatibleMate(Animal candidate)
+    {
+        return candidate.Gender != animal.Gender && candidate.IsReadyToMate();
+    }
+
+    private void Mate(Animal mate)
+    {
+        if(animal.Gender == Gender.Male)
+        {
+            animal.Replicate();
+        }
+
+        if(animal.Gender == Gender.Female)
+        {
+            System.Random rnd = new System.Random();
+            int numberOfChildren = rnd.Next(0,4);
+
+            for(int i = 0; i < numberOfChildren; i++)
+            {    
+                animal.Replicate(mate.Genome);
+            }    
+        }
+    }
 }

@@ -4,15 +4,9 @@ using UnityEngine;
 
 public class Rabbit : Animal
 {
-    public Genome Genome{get; protected set;}
     private SensoryNervousSystem sensorySystem;
     private Muscles muscles;
     public static int MaxID = 0;
-
-    public bool IsReadyToMate()
-    {
-        return MatingUrge >= 100f;
-    }
 
     public void Initialize(List<GeneScriptableObject> initialGeneData)
     {
@@ -85,29 +79,18 @@ public class Rabbit : Animal
         else if (desiredBehaviour == typeof(MateBehaviour))
         { 
             SetBehaviour(new MateBehaviour(sensorySystem, muscles, this));
-        }
-        else if (desiredBehaviour == typeof(RoamingBehaviour))
-        {
-            SetBehaviour(new RoamingBehaviour(muscles));
-        }
-        
+        } 
     }
     
     private Type GetDesiredBehaviourType()
     {
-        if (CurrentEnergy < 25 || (CurrentEnergy < 70 && !IsReadyToMate()))
+        if (CurrentEnergy > 70 && IsReadyToMate())
         {
-            return typeof(SearchForFoodBehaviour);
-            
+            return typeof(MateBehaviour); 
         }
-        else if (IsReadyToMate() && CurrentEnergy > 50)
+        else 
         {
-             
-            return typeof(MateBehaviour);
-        }
-        else
-        {
-            return typeof(RoamingBehaviour);
+            return typeof(SearchForFoodBehaviour); 
         }
     }
 
