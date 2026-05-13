@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class Gene
+public class Gene : IDisposable
 {
     public readonly string Name;
  
@@ -53,11 +53,6 @@ public class Gene
         Statistics.LogGene(Name, ID, Value);
     }
 
-    ~Gene()
-    {
-        Statistics.DelogGene(Name,ID);
-    }
-
     private float GetCost()
     {
         float t = (Value - MinValue) / (MaxValue - MinValue);
@@ -89,5 +84,10 @@ public class Gene
         }
 
         return new Gene(Name, MinValue, MaxValue, MinCost, MaxCost, MutationChance, MaxMutationAmount ,newValue);
+    }
+
+    public void Dispose()
+    {
+        Statistics.DelogGene(Name,ID);
     }
 }

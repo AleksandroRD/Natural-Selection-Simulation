@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
 
-public class Genome
+public class Genome : IDisposable
 {
     public readonly Dictionary<string, Gene> genes = new Dictionary<string, Gene>();
     
@@ -47,5 +48,13 @@ public class Genome
         }
 
         return new Genome(newGenome);
+    }
+
+    public void Dispose()
+    {
+        foreach(var gene in genes)
+        {
+            gene.Value.Dispose();
+        }
     }
 }

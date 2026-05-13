@@ -74,6 +74,7 @@ public abstract class Animal : SimulationEntity
 
     protected virtual void Death()
     {
+        Genome.Dispose();
         GameObject.Destroy(this.gameObject);
     }
 }
