@@ -7,7 +7,7 @@ class MateBehaviour : WanderBehavior
     private readonly Animal animal;
     private readonly Timer timer;
 
-    private bool isCurrentlyMating = false;
+    public bool isCurrentlyMating { get; protected set;} = false;
     private const float matingTime = 3f;
 
     Rabbit nearestMate;
@@ -26,52 +26,45 @@ class MateBehaviour : WanderBehavior
     }
 
     public override void Perform()
-    {
-        nearestMate = sensorySystem.LookFor<Rabbit>();
-        
+    {        
+        if (isCurrentlyMating)
+        {
+            timer.Tick();
+            return;
+        }
+
         if (nearestMate == null || !IsCompatibleMate(nearestMate))
         {
+            nearestMate = sensorySystem.LookFor<Rabbit>();
             Wander();
             return;
         }
 
-        muscles.MoveTo(nearestMate.transform.position);
-
-        if (!muscles.HasArrived()){ return; }
-        
-        if(isCurrentlyMating == false)
-        {
-            timer.Start();
-
-            isCurrentlyMating = true;
-        }
+        muscles.SetDestination(nearestMate.transform.position);
 #if UNITY_EDITOR
-    Debug.DrawLine(muscles.transform.position, nearestMate.transform.position, Color.red);
+        Debug.DrawLine(muscles.transform.position, nearestMate.transform.position, Color.red);
 #endif
-        timer.Tick();
+        if(!muscles.HasArrived()){ return; }
+        
+        timer.Start();
+        
+        isCurrentlyMating = true;
     }
 
     private bool IsCompatibleMate(Animal candidate)
     {
-        return candidate.Gender != animal.Gender && candidate.IsReadyToMate();
+        return candidate.Gender != animal.Gender && candidate.isSearchingMate();
     }
 
     private void Mate(Animal mate)
     {
         if(animal.Gender == Gender.Male)
         {
-            animal.Replicate();
+            animal.ReplicateMale();
         }
-
-        if(animal.Gender == Gender.Female)
+        else
         {
-            System.Random rnd = new System.Random();
-            int numberOfChildren = rnd.Next(0,4);
-
-            for(int i = 0; i < numberOfChildren; i++)
-            {    
-                animal.Replicate(mate.Genome);
-            }    
+            animal.ReplicateFemale(mate.Genome);  
         }
     }
 }

@@ -46,20 +46,27 @@ public class Rabbit : Animal
         Statistics.LogPopulation("Rabbit", true);
     }
 
-    public override void Replicate()
+    public override void ReplicateMale()
     {
         MatingUrge = 0;
     }
 
-    public override void Replicate(Genome otherGenome)
+    public override void ReplicateFemale(Genome otherGenome)
     {
-        Genome childGenome = Genome.Recombine(otherGenome);
+        System.Random rnd = new System.Random();
+        int numberOfChildren = rnd.Next(0,(int)Genome.GetGeneValue("Birth Gene"));
 
-        Vector2 newPosition = UnityEngine.Random.onUnitCircle;
-        Vector2 newRotation = UnityEngine.Random.onUnitCircle;
-        GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0,newPosition.y), Quaternion.LookRotation(newRotation));
+        for(int i = 0; i < numberOfChildren; i++)
+        {
+            Genome childGenome = Genome.Recombine(otherGenome);
 
-        childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
+            Vector2 newPosition = UnityEngine.Random.onUnitCircle;
+            Vector2 newRotation = UnityEngine.Random.onUnitCircle;
+            GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0,newPosition.y), Quaternion.LookRotation(newRotation));
+
+            childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
+
+        }
 
         MatingUrge = 0;
     }

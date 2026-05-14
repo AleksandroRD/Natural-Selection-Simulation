@@ -16,33 +16,27 @@ public abstract class Animal : SimulationEntity
     public float SexDrive { get; protected set; }
 
     public Gender Gender { get; protected set; }
-    public bool IsMating { get; private set; }
     
     public Behaviour CurrentBehaviour { get; protected set;}
     public Genome Genome { get; protected set; }
     
     public virtual bool IsReadyToMate()
     {
-        return MatingUrge >= 100f && !IsMating;
+        return MatingUrge >= 100f;
     }
 
-    public void StartMating()
+    public bool isSearchingMate()
     {
-        IsMating = true;
+        return CurrentBehaviour?.GetType() == typeof(MateBehaviour) && !(CurrentBehaviour as MateBehaviour).isCurrentlyMating;
     }
 
-    public void FinishMating()
-    {
-        IsMating = false;
-    }
-
-    public abstract void Replicate(Genome otherGenome);
-    public abstract void Replicate();
+    public abstract void ReplicateFemale(Genome otherGenome);
+    public abstract void ReplicateMale();
 
     public override void Simulate()
     {
         MatingUrge += SexDrive;
-        CurrentEnergy -= EnergyExpenditure;
+        CurrentEnergy -= EnergyExpenditure / 50f; // 50 updates per second for FixedUpdate()
 
         if(CurrentEnergy <= 0)
         {

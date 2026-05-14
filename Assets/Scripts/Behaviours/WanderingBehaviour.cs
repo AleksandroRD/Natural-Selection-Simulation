@@ -5,18 +5,13 @@ public abstract class WanderBehavior : Behaviour
     private Muscles muscles;
 
     private float wandertheta = 0;
-    private float wanderRadius = 1.5f; 
+    private float wanderRadius = 1f; 
     private float diversionStartDistance = 1.5f;
 
     public WanderBehavior(Muscles muscles)
     {
         this.muscles = muscles;
         this.wandertheta = Random.Range(-180,180);
-    }
-
-    ~WanderBehavior()
-    {
-        muscles.Stop();
     }
 
     protected void Wander()
@@ -38,7 +33,8 @@ public abstract class WanderBehavior : Behaviour
         }
         else
         { 
-            wandertheta += Random.Range(-12.0f, 12.0f);
+            wandertheta += Random.Range(-5.0f, 5.0f);
+            wandertheta = NormalizeAngle(wandertheta);
 
             //making rotation relative to agent           
             Vector3 rotationVector = Quaternion.AngleAxis(wandertheta, Vector3.down) * muscles.transform.forward;
@@ -46,6 +42,8 @@ public abstract class WanderBehavior : Behaviour
         }
 
         direction = (wanderPoint - muscles.transform.position).normalized;
+
+        muscles.MoveInDirection(direction);
 #if UNITY_EDITOR
         Debug.DrawLine(muscles.transform.position, muscles.transform.position + muscles.transform.forward * 3f, Color.yellow);
         // Draw line to wander point
@@ -55,35 +53,39 @@ public abstract class WanderBehavior : Behaviour
         // Draw a cross at the wander point
         Debug.DrawRay(wanderPoint, Vector3.up * 0.3f, Color.red);        
 #endif
-        muscles.MoveInDirection(direction);
     }
 
-public static Vector3 ClosestPointOnBoundsEdge(Bounds bounds, Vector3 point)
-{
-    float distLeft   = point.x - bounds.min.x;
-    float distRight  = bounds.max.x - point.x;
-    float distBack   = point.z - bounds.min.z;
-    float distFront  = bounds.max.z - point.z;
+    float NormalizeAngle(float angle)
+    {
+        return ((angle + 180f) % 360f + 360f) % 360f - 180f;
+    }
 
-    float minDist = Mathf.Min(distLeft, distRight, distBack, distFront);
+    public static Vector3 ClosestPointOnBoundsEdge(Bounds bounds, Vector3 point)
+    {
+        float distLeft   = point.x - bounds.min.x;
+        float distRight  = bounds.max.x - point.x;
+        float distBack   = point.z - bounds.min.z;
+        float distFront  = bounds.max.z - point.z;
 
-    if (minDist == distLeft)
-    {
-        return new Vector3(bounds.min.x, point.y, point.z);
+        float minDist = Mathf.Min(distLeft, distRight, distBack, distFront);
+
+        if (minDist == distLeft)
+        {
+            return new Vector3(bounds.min.x, point.y, point.z);
+        }
+        else if (minDist == distRight)
+        {
+            return new Vector3(bounds.max.x, point.y, point.z);
+        }
+        else if (minDist == distBack)
+        {
+            return new Vector3(point.x, point.y, bounds.min.z);
+        }
+        else
+        {
+            return new Vector3(point.x, point.y, bounds.max.z);
+        }
     }
-    else if (minDist == distRight)
-    {
-        return new Vector3(bounds.max.x, point.y, point.z);
-    }
-    else if (minDist == distBack)
-    {
-        return new Vector3(point.x, point.y, bounds.min.z);
-    }
-    else
-    {
-        return new Vector3(point.x, point.y, bounds.max.z);
-    }
-}
 
 #if UNITY_EDITOR
     void DrawDebugCircle(Vector3 center, float radius, Color color, int segments = 32)

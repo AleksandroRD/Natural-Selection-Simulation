@@ -8,6 +8,9 @@ public class Simulation : MonoBehaviour
     private float timeScale = 1;
     [SerializeField]
     private Bounds simulationBounds;
+
+    [SerializeField]
+    private float boundsBufferThickness;
     private static Bounds simulationBoundsInternal;
     [SerializeField]
     private GameObject rabitPrefab;
@@ -31,8 +34,9 @@ public class Simulation : MonoBehaviour
     void Start()
     {
         Time.timeScale = timeScale;
-        
         simulationBoundsInternal = simulationBounds;
+        simulationBoundsInternal.extents = new Vector3(simulationBounds.extents.x - boundsBufferThickness,simulationBounds.extents.y - boundsBufferThickness,simulationBounds.extents.z - boundsBufferThickness);
+        
         for(int i = 0; i < startingNumberOfRabits;i++)
         {
             GameObject rabit = GameObject.Instantiate(rabitPrefab);

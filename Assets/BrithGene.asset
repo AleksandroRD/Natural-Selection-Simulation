@@ -16,5 +16,6 @@ MonoBehaviour:
   MinValue: 1
   MaxValue: 5
   MutationChance: 10
-  MaxMutationAmount: 0
+  MaxMutationAmount: 1
+  MinCost: 0
   MaxCost: 0
