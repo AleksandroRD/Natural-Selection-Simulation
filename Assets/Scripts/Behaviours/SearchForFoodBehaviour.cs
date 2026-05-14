@@ -25,36 +25,32 @@ class SearchForFoodBehaviour : WanderBehavior
         };
     }
 
-    ~SearchForFoodBehaviour()
-    {
-        muscles.Stop();
-    }
-
     public override void Perform()
     {
-        nearestFood = sensorySystem.LookFor<Food>();
+        if(eating)
+        {
+            eatingTimer.Tick();
+            return;
+        }
 
-        if(nearestFood == null || nearestFood.isBeingConsumed) 
-        { 
+        if(nearestFood == null || nearestFood.isBeingConsumed && !eating) 
+        {
+            nearestFood = sensorySystem.LookFor<Food>(); 
             Wander();
             return; 
         }
         
-        muscles.MoveTo(nearestFood.transform.position);
+        muscles.SetDestination(nearestFood.transform.position);
         
-        if (!muscles.HasArrived()) { return; }
-        
-        if(!eating)
-        {
-            nearestFood.StartConsumtion();
-
-            eatingTimer.Start();
-
-            eating = true;
-        }
 #if UNITY_EDITOR
-    Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
+        Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
 #endif
-        eatingTimer.Tick();
+        if (!muscles.HasArrived()) { return; }
+
+        nearestFood.StartConsumtion();
+        
+        eatingTimer.Start();
+
+        eating = true;
     }
 }
