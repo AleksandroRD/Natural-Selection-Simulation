@@ -27,7 +27,12 @@ public abstract class Animal : SimulationEntity
 
     public bool isSearchingMate()
     {
-        return CurrentBehaviour?.GetType() == typeof(MateBehaviour) && !(CurrentBehaviour as MateBehaviour).isCurrentlyMating;
+        return (CurrentBehaviour as MateBehaviour)?.state == MateBehaviour.State.Searching;
+    }
+
+    public Behaviour getCurrentBehaviour()
+    {
+        return CurrentBehaviour;
     }
 
     public abstract void ReplicateFemale(Genome otherGenome);

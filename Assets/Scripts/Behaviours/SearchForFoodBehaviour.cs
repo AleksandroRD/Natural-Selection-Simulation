@@ -3,13 +3,21 @@ using UnityEngine;
 
 class SearchForFoodBehaviour : WanderBehavior
 {
+    enum State
+    {
+        Searching,
+        Found,
+        GettingToFood,
+        Eating
+    }
+
     private readonly SensoryNervousSystem sensorySystem;
     private readonly Muscles muscles;
     private readonly Timer eatingTimer;
     private readonly Action<float> eatingFunction;
-    private bool eating = false;
     private const float eatingTime = 1;
     private Food nearestFood;
+    State state = State.Searching;
 
     public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction) : base(muscles)
     {
@@ -20,37 +28,46 @@ class SearchForFoodBehaviour : WanderBehavior
 
         eatingTimer.OnTimerFinished += () =>
         {
-            eatingFunction(nearestFood.FinishConsumption());
-            eating = false;
+            if (nearestFood != null)
+            {
+                eatingFunction(nearestFood.FinishConsumption());
+            }
+            nearestFood = null;
+            state = State.Searching;
         };
     }
 
     public override void Perform()
     {
-        if(eating)
+        switch (state)
         {
-            eatingTimer.Tick();
-            return;
+            case State.Searching:
+                nearestFood = sensorySystem.LookFor<Food>();
+
+                Wander();
+                if(nearestFood != null && !nearestFood.isBeingConsumed) 
+                {
+                    state = State.Found;
+                }
+                break;
+            case State.Found:
+                muscles.SetDestination(nearestFood.transform.position);
+            #if UNITY_EDITOR
+                Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
+            #endif
+                if (muscles.HasArrived())
+                {
+                    nearestFood.StartConsumtion();
+        
+                    eatingTimer.Start();
+
+                    state = State.Eating;
+                }
+                break;
+
+            case State.Eating:
+                eatingTimer.Tick();
+                break;
         }
-
-        if(nearestFood == null || nearestFood.isBeingConsumed && !eating) 
-        {
-            nearestFood = sensorySystem.LookFor<Food>(); 
-            Wander();
-            return; 
-        }
-        
-        muscles.SetDestination(nearestFood.transform.position);
-        
-#if UNITY_EDITOR
-        Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
-#endif
-        if (!muscles.HasArrived()) { return; }
-
-        nearestFood.StartConsumtion();
-        
-        eatingTimer.Start();
-
-        eating = true;
     }
 }

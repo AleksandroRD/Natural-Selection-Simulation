@@ -29,15 +29,9 @@ public class Rabbit : Animal
         
         System.Random rnd = new System.Random();
         int result = rnd.Next(0,2);
-        if (result == 0)
-        {
-            Gender = Gender.Male;
-        }
-        else
-        {
-            Gender = Gender.Female;
-        }
-        
+
+        Gender = result == 0 ? Gender.Male : Gender.Female;
+
         SexDrive = genome.GetGeneValue("Sex Drive");
         muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
@@ -65,7 +59,6 @@ public class Rabbit : Animal
             GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0,newPosition.y), Quaternion.LookRotation(newRotation));
 
             childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
-
         }
 
         MatingUrge = 0;
@@ -91,13 +84,20 @@ public class Rabbit : Animal
     
     private Type GetDesiredBehaviourType()
     {
-        if (CurrentEnergy > 70 && IsReadyToMate())
-        {
-            return typeof(MateBehaviour); 
-        }
-        else 
+        var mateBehaviour = CurrentBehaviour as MateBehaviour;
+        bool isCurrentlyMating = mateBehaviour != null && mateBehaviour.state != MateBehaviour.State.Searching;
+
+        if(CurrentEnergy < Genome.GetGeneValue("Mate Hunger Gene") && !isCurrentlyMating)
         {
             return typeof(SearchForFoodBehaviour); 
+        }
+        else if(IsReadyToMate())
+        {
+            return typeof(MateBehaviour);
+        }
+        else
+        {
+            return typeof(RoamingBehaviour);
         }
     }
 

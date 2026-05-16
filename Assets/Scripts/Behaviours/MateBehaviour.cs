@@ -2,15 +2,23 @@ using UnityEngine;
 
 class MateBehaviour : WanderBehavior
 {
+    public enum State{
+        Searching,
+        Found,
+        MovingToPartner,
+        Mating
+    }
+
     private readonly SensoryNervousSystem sensorySystem;
     private readonly Muscles muscles;
     private readonly Animal animal;
     private readonly Timer timer;
 
-    public bool isCurrentlyMating { get; protected set;} = false;
+    public State state { get; protected set; } = State.Searching;
     private const float matingTime = 3f;
 
-    Rabbit nearestMate;
+    Animal potentialMate;
+    Animal partner;
     public MateBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Animal animal) : base(muscles)
     {
         this.sensorySystem = sensorySystem;
@@ -19,41 +27,68 @@ class MateBehaviour : WanderBehavior
 
         timer = new Timer(matingTime);
         timer.OnTimerFinished += () => { 
-            Mate(nearestMate); 
-            nearestMate = null;
-            isCurrentlyMating = false;
+            Mate(partner); 
+            partner = null;
+            state = State.Searching;
         };
     }
 
     public override void Perform()
-    {        
-        if (isCurrentlyMating)
+    {
+        switch (state)
         {
-            timer.Tick();
-            return;
-        }
+            case State.Searching:
+                potentialMate = sensorySystem.LookFor<Rabbit>();
+                Wander();
+                if (IsCompatibleMate(potentialMate))
+                {
+                    state = State.Found;
+                }
+                break;
+            case State.Found:
+                if((potentialMate.getCurrentBehaviour() as MateBehaviour).RecieveProposal(this.animal))
+                {
+                    Commit(potentialMate);
+                    state = State.MovingToPartner;
+                }
+                else
+                {
+                    state = State.Searching;
+                }
+                break;
+            case State.MovingToPartner:
+                muscles.SetDestination(partner.transform.position);
+            #if UNITY_EDITOR
+                Debug.DrawLine(muscles.transform.position, partner.transform.position, Color.red);
+            #endif
+                if (muscles.HasArrived())
+                {
+                    timer.Start();
+                    state = State.Mating;
+                }
+                break;
+            case State.Mating:
+                timer.Tick();
+                break;
+        }        
+    }
 
-        if (nearestMate == null || !IsCompatibleMate(nearestMate))
-        {
-            nearestMate = sensorySystem.LookFor<Rabbit>();
-            Wander();
-            return;
-        }
+    public bool RecieveProposal(Animal suitor)
+    {
+        //for now accept any proposal
+        Commit(suitor);
+        return true;
+    }
 
-        muscles.SetDestination(nearestMate.transform.position);
-#if UNITY_EDITOR
-        Debug.DrawLine(muscles.transform.position, nearestMate.transform.position, Color.red);
-#endif
-        if(!muscles.HasArrived()){ return; }
-        
-        timer.Start();
-        
-        isCurrentlyMating = true;
+    void Commit(Animal partner)
+    {
+        state = State.MovingToPartner;
+        this.partner = partner;
     }
 
     private bool IsCompatibleMate(Animal candidate)
     {
-        return candidate.Gender != animal.Gender && candidate.isSearchingMate();
+        return candidate != null && candidate.Gender != animal.Gender && candidate.isSearchingMate();
     }
 
     private void Mate(Animal mate)

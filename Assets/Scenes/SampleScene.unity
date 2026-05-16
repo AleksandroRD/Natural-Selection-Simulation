@@ -1666,6 +1666,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: df930226177c82e4ca0c51c843e591e8, type: 2}
   - {fileID: 11400000, guid: dd0500bf4b560f84d804aac80b929af8, type: 2}
   - {fileID: 11400000, guid: a7624bd5a95349b40bd39881a3221d59, type: 2}
+  - {fileID: 11400000, guid: 200fb6c16a8eeb54ba1c45be8908f934, type: 2}
   startingNumberOfRabits: 10
   carrotPrefab: {fileID: 2932444324656926922, guid: f31fa0ae7a230d547a5ae707780aa5fe, type: 3}
   startingNumberofCarrots: 20

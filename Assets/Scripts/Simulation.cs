@@ -59,8 +59,7 @@ public class Simulation : MonoBehaviour
         timer += Time.deltaTime;
         if(timer < timeToSpawnCarrot) {return; }
         
-        var carrot = GameObject.Instantiate(carrotPrefab);
-        carrot.transform.position = GetRandomPostion();
+        GameObject.Instantiate(carrotPrefab,GetRandomPostion(),Quaternion.identity);
         
         timer = 0;
     }
