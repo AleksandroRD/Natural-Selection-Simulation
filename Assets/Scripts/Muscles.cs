@@ -4,22 +4,25 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Muscles : MonoBehaviour
 {
-    public float MovementSpeed {get; private set;}
-    private readonly float targetPositionMargin = 0.15f;
-    private readonly float rotationSpeed = 2f;
-    private Rigidbody rb;
+    public float MovementSpeed {get; set;}
+    private const float TARGET_MARGIN = 0.15f;
+    private const float ROTATION_SPEED = 2f;
+    public Rigidbody rb;
     private Vector3 currentDestination = Vector3.positiveInfinity;
     private Vector3 currentDirection = Vector3.zero;
     public bool IsMoving {get; private set;} = false;
-
+    
+    public Vector3 velocity 
+    {
+        get => rb.linearVelocity;
+        set
+        {
+            rb.linearVelocity = value;
+        }
+    }
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-    }
-
-    public void SetMovementSpeed(float movementSpeed)
-    {
-        MovementSpeed = movementSpeed;
     }
 
     public void SetDestination(Vector3 destination)
@@ -53,12 +56,12 @@ public class Muscles : MonoBehaviour
         rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, targetVelocity, MovementSpeed);
 
         Quaternion targetRot = Quaternion.LookRotation(direction);
-        rb.MoveRotation(Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime));
+        rb.MoveRotation(Quaternion.Slerp(transform.rotation, targetRot, ROTATION_SPEED * Time.deltaTime));
     }
 
     public bool HasArrived()
     {
-        return Vector3.Distance(transform.position, currentDestination) <= targetPositionMargin;
+        return Vector3.Distance(transform.position, currentDestination) <= TARGET_MARGIN;
     }
 
     public void Stop()
@@ -70,14 +73,14 @@ public class Muscles : MonoBehaviour
     
     void FixedUpdate()
     {
-        if(!IsMoving){ return; }
+        // if(!IsMoving){ return; }
         
-        if(HasArrived() == true)
-        {
-            Stop();
-            return;
-        }
+        // if(HasArrived() == true)
+        // {
+        //     Stop();
+        //     return;
+        // }
 
-        MoveInDirectionIntern(currentDirection);
+        // MoveInDirectionIntern(currentDirection);
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-class MateBehaviour : WanderBehavior
+class MateBehaviour : SteeringBehaviour
 {
     public enum State{
         Searching,
@@ -39,7 +39,7 @@ class MateBehaviour : WanderBehavior
         {
             case State.Searching:
                 potentialMate = sensorySystem.LookFor<Rabbit>();
-                Wander();
+                //Wander();
                 if (IsCompatibleMate(potentialMate))
                 {
                     state = State.Found;
@@ -57,11 +57,11 @@ class MateBehaviour : WanderBehavior
                 }
                 break;
             case State.MovingToPartner:
-                muscles.SetDestination(partner.transform.position);
+                //GoTo(partner.transform.position);
             #if UNITY_EDITOR
                 Debug.DrawLine(muscles.transform.position, partner.transform.position, Color.red);
             #endif
-                if (muscles.HasArrived())
+                //if (HasArrived())
                 {
                     timer.Start();
                     state = State.Mating;
@@ -70,7 +70,8 @@ class MateBehaviour : WanderBehavior
             case State.Mating:
                 timer.Tick();
                 break;
-        }        
+        }
+        base.Perform();        
     }
 
     public bool RecieveProposal(Animal suitor)

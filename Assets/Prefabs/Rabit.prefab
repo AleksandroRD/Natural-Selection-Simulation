@@ -166,7 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbcb56bdbe808a348a5689f2d7c38616, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rabit
-  <BaseExpenditure>k__BackingField: 0.025
 --- !u!114 &3420016461682543680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,6 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b80669f5143e624e8acbfc338569f44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Muscles
+  rb: {fileID: 0}
 --- !u!135 &7963288552097798132
 SphereCollider:
   m_ObjectHideFlags: 0

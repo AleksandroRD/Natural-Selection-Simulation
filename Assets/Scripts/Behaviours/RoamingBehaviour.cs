@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RoamingBehaviour : WanderBehavior
+public class RoamingBehaviour : SteeringBehaviour
 {
     public RoamingBehaviour(Muscles muscles) : base(muscles)
     {
@@ -10,5 +10,6 @@ public class RoamingBehaviour : WanderBehavior
     public override void Perform()
     {
         Wander();
+        base.Perform();
     }
 }

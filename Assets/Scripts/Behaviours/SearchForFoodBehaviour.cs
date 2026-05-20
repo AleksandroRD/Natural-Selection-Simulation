@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-class SearchForFoodBehaviour : WanderBehavior
+class SearchForFoodBehaviour : SteeringBehaviour
 {
     enum State
     {
@@ -44,18 +44,19 @@ class SearchForFoodBehaviour : WanderBehavior
             case State.Searching:
                 nearestFood = sensorySystem.LookFor<Food>();
 
-                Wander();
+                //Wander();
                 if(nearestFood != null && !nearestFood.isBeingConsumed) 
                 {
                     state = State.Found;
                 }
                 break;
+                
             case State.Found:
-                muscles.SetDestination(nearestFood.transform.position);
+                //GoTo(nearestFood.transform.position);
             #if UNITY_EDITOR
                 Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
             #endif
-                if (muscles.HasArrived())
+                //if (HasArrived())
                 {
                     nearestFood.StartConsumtion();
         
@@ -69,5 +70,7 @@ class SearchForFoodBehaviour : WanderBehavior
                 eatingTimer.Tick();
                 break;
         }
+        
+        base.Perform();
     }
 }
