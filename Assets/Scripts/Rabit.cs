@@ -5,7 +5,6 @@ using UnityEngine;
 public class Rabbit : Animal
 {
     private SensoryNervousSystem sensorySystem;
-    private Muscles muscles;
     public static int MaxID = 0;
 
     public void Initialize(List<GeneScriptableObject> initialGeneData)
@@ -18,7 +17,6 @@ public class Rabbit : Animal
         this.name = "Rabbit " + MaxID++;
         this.Genome = genome;
 
-        muscles = GetComponent<Muscles>();
         sensorySystem = GetComponent<SensoryNervousSystem>();
         CurrentEnergy = 100.0f;
         
@@ -33,9 +31,8 @@ public class Rabbit : Animal
         Gender = result == 0 ? Gender.Male : Gender.Female;
 
         SexDrive = genome.GetGeneValue("Sex Drive");
-        muscles.SetMovementSpeed(genome.GetGeneValue("Speed Gene"));
         sensorySystem.SetSightRadius(genome.GetGeneValue("Sight Gene"));
-        SetBehaviour( new RoamingBehaviour(muscles));
+        SetBehaviour( new RoamingBehaviour(this.gameObject, genome.GetGeneValue("Speed Gene")));
 
         Statistics.LogPopulation("Rabbit", true);
     }
@@ -56,11 +53,11 @@ public class Rabbit : Animal
 
             Vector2 newPosition = UnityEngine.Random.onUnitCircle;
             Vector2 newRotation = UnityEngine.Random.onUnitCircle;
-            GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0,newPosition.y), Quaternion.LookRotation(newRotation));
+            GameObject childGameObject = GameObject.Instantiate(this.gameObject, this.transform.position + new Vector3(newPosition.x,0, newPosition.y), Quaternion.LookRotation(newRotation));
 
             childGameObject.GetComponent<Rabbit>().Initialize(childGenome);
         }
-
+    
         MatingUrge = 0;
     }
 
@@ -74,11 +71,11 @@ public class Rabbit : Animal
         
         if (desiredBehaviour == typeof(SearchForFoodBehaviour))
         {
-            SetBehaviour(new SearchForFoodBehaviour(sensorySystem, muscles, Eat));
+            SetBehaviour(new SearchForFoodBehaviour(sensorySystem, this.gameObject, Eat,  this.Genome.GetGeneValue("Speed Gene")));
         }
         else if (desiredBehaviour == typeof(MateBehaviour))
         { 
-            SetBehaviour(new MateBehaviour(sensorySystem, muscles, this));
+            SetBehaviour(new MateBehaviour(sensorySystem, this.gameObject, this, this.Genome.GetGeneValue("Speed Gene")));
         } 
     }
     

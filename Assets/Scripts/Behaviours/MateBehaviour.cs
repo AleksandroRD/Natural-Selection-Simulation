@@ -10,7 +10,7 @@ class MateBehaviour : SteeringBehaviour
     }
 
     private readonly SensoryNervousSystem sensorySystem;
-    private readonly Muscles muscles;
+    private readonly GameObject agent;
     private readonly Animal animal;
     private readonly Timer timer;
 
@@ -19,10 +19,10 @@ class MateBehaviour : SteeringBehaviour
 
     Animal potentialMate;
     Animal partner;
-    public MateBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Animal animal) : base(muscles)
+    public MateBehaviour(SensoryNervousSystem sensorySystem, GameObject agent, Animal animal,float maxSpeed) : base(agent,maxSpeed)
     {
         this.sensorySystem = sensorySystem;
-        this.muscles = muscles;
+        this.agent = agent;
         this.animal = animal;
 
         timer = new Timer(matingTime);
@@ -39,7 +39,7 @@ class MateBehaviour : SteeringBehaviour
         {
             case State.Searching:
                 potentialMate = sensorySystem.LookFor<Rabbit>();
-                //Wander();
+                Wander();
                 if (IsCompatibleMate(potentialMate))
                 {
                     state = State.Found;
@@ -57,11 +57,11 @@ class MateBehaviour : SteeringBehaviour
                 }
                 break;
             case State.MovingToPartner:
-                //GoTo(partner.transform.position);
+                Seek(potentialMate.transform.position);
             #if UNITY_EDITOR
-                Debug.DrawLine(muscles.transform.position, partner.transform.position, Color.red);
+                Debug.DrawLine(position, potentialMate.transform.position, Color.red);
             #endif
-                //if (HasArrived())
+                if(HasArrived(potentialMate.transform.position))
                 {
                     timer.Start();
                     state = State.Mating;

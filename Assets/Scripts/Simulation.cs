@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Simulation : MonoBehaviour
@@ -37,13 +36,16 @@ public class Simulation : MonoBehaviour
         simulationBoundsInternal = simulationBounds;
         simulationBoundsInternal.extents = new Vector3(simulationBounds.extents.x - boundsBufferThickness,simulationBounds.extents.y - boundsBufferThickness,simulationBounds.extents.z - boundsBufferThickness);
         
-        for(int i = 0; i < startingNumberOfRabits;i++)
+        for (int i = 0; i < startingNumberOfRabits; i++)
         {
             GameObject rabit = GameObject.Instantiate(rabitPrefab);
             rabit.transform.position = GetRandomPostion();
 
-            rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
+            float randomX = Random.Range(0f, 360f);
+            float randomZ = Random.Range(0f, 360f);
+            rabit.transform.rotation = Quaternion.Euler(randomX, 0f, randomZ);
 
+            rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
         }
 
         for(int i = 0; i < startingNumberofCarrots; i++)
@@ -58,8 +60,8 @@ public class Simulation : MonoBehaviour
     {
         timer += Time.deltaTime;
         if(timer < timeToSpawnCarrot) {return; }
-        
-        GameObject.Instantiate(carrotPrefab,GetRandomPostion(),Quaternion.identity);
+
+        GameObject.Instantiate(carrotPrefab, GetRandomPostion(), Quaternion.identity);
         
         timer = 0;
     }

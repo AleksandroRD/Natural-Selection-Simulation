@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class RoamingBehaviour : SteeringBehaviour
 {
-    public RoamingBehaviour(Muscles muscles) : base(muscles)
+    public RoamingBehaviour(GameObject agent,float maxSpeed) : base(agent,maxSpeed)
     {
         
     }

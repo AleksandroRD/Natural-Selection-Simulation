@@ -12,17 +12,17 @@ class SearchForFoodBehaviour : SteeringBehaviour
     }
 
     private readonly SensoryNervousSystem sensorySystem;
-    private readonly Muscles muscles;
+    private readonly GameObject agent;
     private readonly Timer eatingTimer;
     private readonly Action<float> eatingFunction;
     private const float eatingTime = 1;
     private Food nearestFood;
     State state = State.Searching;
 
-    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, Muscles muscles, Action<float> eatingFunction) : base(muscles)
+    public SearchForFoodBehaviour(SensoryNervousSystem sensorySystem, GameObject agent, Action<float> eatingFunction, float maxSpeed) : base(agent,maxSpeed)
     {
         this.sensorySystem = sensorySystem;
-        this.muscles = muscles;
+        this.agent = agent;
         this.eatingFunction = eatingFunction;
         eatingTimer = new Timer(eatingTime); 
 
@@ -44,7 +44,7 @@ class SearchForFoodBehaviour : SteeringBehaviour
             case State.Searching:
                 nearestFood = sensorySystem.LookFor<Food>();
 
-                //Wander();
+                Wander();
                 if(nearestFood != null && !nearestFood.isBeingConsumed) 
                 {
                     state = State.Found;
@@ -52,11 +52,11 @@ class SearchForFoodBehaviour : SteeringBehaviour
                 break;
                 
             case State.Found:
-                //GoTo(nearestFood.transform.position);
+                Seek(nearestFood.transform.position);
             #if UNITY_EDITOR
-                Debug.DrawLine(muscles.transform.position, nearestFood.transform.position, Color.red);
+                Debug.DrawLine(position, nearestFood.transform.position, Color.red);
             #endif
-                //if (HasArrived())
+                if (HasArrived(nearestFood.transform.position))
                 {
                     nearestFood.StartConsumtion();
         
