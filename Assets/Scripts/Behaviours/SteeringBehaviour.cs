@@ -3,16 +3,16 @@ using UnityEngine;
 
 public abstract class SteeringBehaviour : Behaviour
 {
-    private GameObject agent;
+    protected GameObject agent;
 
     private float wandertheta = 0;
 
-    private const float TARGET_MARGIN = 0.15f;
+    private const float TARGET_MARGIN = 0.1f;
+    private const float ARRIVAL_RADIUS = 3f;
     private const float WANDER_RADIUS = 0.5f; 
-    private const float MAX_FORCE = 1f;
-    private readonly float MAX_SPEED = 2f;
-    private const float ROTATION_SPEED = 2f;
     private const float ACCELERATION = 5f;
+    private readonly float MAX_SPEED = 2f;
+    private const float ROTATION_SPEED = 4f;
     private const float WISKER_LENGHT = 3f;
 
     protected Vector3 position {get => agent.transform.position; set { agent.transform.position = value;} }
@@ -24,7 +24,7 @@ public abstract class SteeringBehaviour : Behaviour
     /// </summary>
     private Vector3 steeringForce = Vector3.zero;
     private Vector3 steeringVelocity;
-    private Vector3? seekTarget;
+
     public SteeringBehaviour(GameObject agent, float maxSpeed)
     {
         this.agent = agent;
@@ -36,31 +36,37 @@ public abstract class SteeringBehaviour : Behaviour
     {
         AvoidObstacles();
 
-        if(steeringForce.magnitude > MAX_FORCE)
+        if(steeringForce.magnitude > ACCELERATION)
         {
-            steeringForce = steeringForce.normalized * MAX_FORCE;
+            steeringForce = steeringForce.normalized * ACCELERATION;
         }
 
-        steeringVelocity += steeringForce * ACCELERATION * Time.deltaTime;
+        steeringVelocity += steeringForce * ACCELERATION * Time.fixedDeltaTime;
 
-        if(steeringVelocity.magnitude > MAX_SPEED)
+        steeringVelocity = Vector3.ClampMagnitude(steeringVelocity, MAX_SPEED);
+        
+        position += steeringVelocity * Time.fixedDeltaTime;
+        
+        if(steeringVelocity != Vector3.zero)
         {
-            steeringVelocity = steeringVelocity.normalized * MAX_SPEED;
+            rotation = Quaternion.Slerp(rotation, Quaternion.LookRotation(steeringVelocity.normalized), ROTATION_SPEED * Time.fixedDeltaTime);
         }
-
-        position += steeringVelocity * Time.deltaTime;
-
-        rotation = Quaternion.Slerp(rotation, Quaternion.LookRotation(steeringVelocity.normalized), ROTATION_SPEED * Time.deltaTime);
 
         steeringForce = Vector3.zero;
     }
 
     public void Seek(Vector3 seekPoint)
     {
-        Vector3 disiredVelocity = (seekPoint - position).normalized * MAX_SPEED;
-        Vector3 seekForce = disiredVelocity - steeringVelocity;
+        Vector3 toTarget = seekPoint - position;
+        float distance = toTarget.magnitude;
 
+        if(distance < 0.01f){ return; }
+        
+        Vector3 desiredVelocity = distance < ARRIVAL_RADIUS ? toTarget.normalized * Mathf.Lerp(0, MAX_SPEED, distance / ARRIVAL_RADIUS) : toTarget.normalized * MAX_SPEED;
+
+        Vector3 seekForce = desiredVelocity - steeringVelocity;
         seekForce.y = 0;
+
         steeringForce += seekForce;
     }
 
@@ -171,11 +177,16 @@ public abstract class SteeringBehaviour : Behaviour
         steeringForce += avoidanceForce;
     }
 
-    public bool HasArrived(Vector3 target)
+    protected void Stop()
     {
+        steeringVelocity = Vector3.zero;
+    }
+
+    public bool HasArrived(Vector3 target)
+    {    
         Vector3 diff = target - position;
         diff.y = 0;
-        return diff.sqrMagnitude <= TARGET_MARGIN * TARGET_MARGIN;
+        return diff.sqrMagnitude <= TARGET_MARGIN * TARGET_MARGIN && steeringVelocity.magnitude < 0.2f;
     }
 
     float NormalizeAngle(float angle)

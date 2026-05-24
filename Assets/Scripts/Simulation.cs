@@ -38,14 +38,12 @@ public class Simulation : MonoBehaviour
         
         for (int i = 0; i < startingNumberOfRabits; i++)
         {
-            GameObject rabit = GameObject.Instantiate(rabitPrefab);
-            rabit.transform.position = GetRandomPostion();
+            GameObject rabbit = GameObject.Instantiate(rabitPrefab);
+            rabbit.transform.position = GetRandomPostion();
 
-            float randomX = Random.Range(0f, 360f);
-            float randomZ = Random.Range(0f, 360f);
-            rabit.transform.rotation = Quaternion.Euler(randomX, 0f, randomZ);
-
-            rabit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
+            float randomY = Random.Range(0f, 360f);
+            rabbit.transform.rotation = Quaternion.Euler(0, randomY, 0);
+            rabbit.GetComponent<Rabbit>().Initialize(initialRabbitGeneData);
         }
 
         for(int i = 0; i < startingNumberofCarrots; i++)

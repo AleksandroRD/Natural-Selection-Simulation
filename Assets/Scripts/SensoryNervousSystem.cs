@@ -36,21 +36,7 @@ public class SensoryNervousSystem : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        DrawDebugCircle(transform.position,Radius,new Color(0f, 1f, 0.4f, 0.9f));
-    }
-
-    void DrawDebugCircle(Vector3 center, float radius, Color color, int segments = 32)
-    {
-        float angleStep = 2 * Mathf.PI / segments;
-        for (int i = 0; i < segments; i++)
-        {
-            float a1 = angleStep * i;
-            float a2 = angleStep * (i + 1);
-            Vector3 p1 = center + new Vector3(Mathf.Cos(a1), 0f, Mathf.Sin(a1)) * radius;
-            Vector3 p2 = center + new Vector3(Mathf.Cos(a2), 0f, Mathf.Sin(a2)) * radius;
-            Gizmos.color = color;
-            Gizmos.DrawLine(p1, p2);
-        }
+        Utils.DrawDebugCircle(transform.position,Radius,new Color(0f, 1f, 0.4f, 0.9f));
     }
 #endif
 }

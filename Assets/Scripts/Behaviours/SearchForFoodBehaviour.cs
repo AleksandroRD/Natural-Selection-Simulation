@@ -12,7 +12,6 @@ class SearchForFoodBehaviour : SteeringBehaviour
     }
 
     private readonly SensoryNervousSystem sensorySystem;
-    private readonly GameObject agent;
     private readonly Timer eatingTimer;
     private readonly Action<float> eatingFunction;
     private const float eatingTime = 1;
@@ -52,12 +51,16 @@ class SearchForFoodBehaviour : SteeringBehaviour
                 break;
                 
             case State.Found:
+                if(nearestFood == null && nearestFood.isBeingConsumed) { state = State.Searching; return; }
+
                 Seek(nearestFood.transform.position);
             #if UNITY_EDITOR
                 Debug.DrawLine(position, nearestFood.transform.position, Color.red);
             #endif
                 if (HasArrived(nearestFood.transform.position))
                 {
+                    Stop();
+
                     nearestFood.StartConsumtion();
         
                     eatingTimer.Start();

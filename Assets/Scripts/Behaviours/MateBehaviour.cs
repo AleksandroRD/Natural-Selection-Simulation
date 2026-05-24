@@ -10,7 +10,6 @@ class MateBehaviour : SteeringBehaviour
     }
 
     private readonly SensoryNervousSystem sensorySystem;
-    private readonly GameObject agent;
     private readonly Animal animal;
     private readonly Timer timer;
 
@@ -57,11 +56,12 @@ class MateBehaviour : SteeringBehaviour
                 }
                 break;
             case State.MovingToPartner:
-                Seek(potentialMate.transform.position);
+
+                Seek(partner.transform.position);
             #if UNITY_EDITOR
-                Debug.DrawLine(position, potentialMate.transform.position, Color.red);
+                Debug.DrawLine(position, partner.transform.position, Color.red);
             #endif
-                if(HasArrived(potentialMate.transform.position))
+                if(HasArrived(partner.transform.position))
                 {
                     timer.Start();
                     state = State.Mating;

@@ -102,7 +102,6 @@ GameObject:
   - component: {fileID: 6683729144366434653}
   - component: {fileID: -8907656918150810326}
   - component: {fileID: 3420016461682543680}
-  - component: {fileID: 6529342283901676460}
   - component: {fileID: 7963288552097798132}
   m_Layer: 6
   m_Name: Rabit
@@ -178,19 +177,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fd091550ddf2645bd78e4945fc7a41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sight
---- !u!114 &6529342283901676460
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1481201580239991003}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b80669f5143e624e8acbfc338569f44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Muscles
-  rb: {fileID: 0}
 --- !u!135 &7963288552097798132
 SphereCollider:
   m_ObjectHideFlags: 0
