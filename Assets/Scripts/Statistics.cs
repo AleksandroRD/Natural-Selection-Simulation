@@ -69,6 +69,7 @@ public class Statistics : MonoBehaviour
         if (!populationHistory.ContainsKey(creatureName) || !population.ContainsKey(creatureName))
         {
             populationHistory.Add(creatureName, new SortedDictionary<float, float>());
+            populationHistory[creatureName].Add(0,0);
             population.Add(creatureName,0);
         }
 

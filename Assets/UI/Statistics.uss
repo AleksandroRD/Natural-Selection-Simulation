@@ -6,8 +6,9 @@
     flex-direction: column;
     flex-grow: 1;
 }
-.bar:hover{
-     background-color: rgb(120, 181, 16);
+
+.bar:hover {
+    background-color: rgb(120, 181, 16);
 }
 
 .text {
@@ -15,4 +16,10 @@
     font-size: 18px;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
+}
+
+.axis-text {
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    font-size: 15px;
 }

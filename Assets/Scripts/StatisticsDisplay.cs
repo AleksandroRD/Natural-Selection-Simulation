@@ -15,10 +15,11 @@ public class StatisticsDisplay : MonoBehaviour
 {
     [SerializeField] private Color lineColor   = new Color(0.27f, 0.71f, 1f);
     [SerializeField] private float lineWidth   = 2.5f;
-    string chosenGene = "Speed Gene";
+    string chosenGene;
 
     string chosenCreature = "Rabbit";
     bool showGeneHistory = false;
+    int NumberOfDataToShow = 100;
     EnumField      modeDropdown;
 
     VisualElement  geneHistogramRoot;
@@ -35,6 +36,14 @@ public class StatisticsDisplay : MonoBehaviour
     VisualElement  populationChartCanvas;
     VisualElement  populationChartRoot;
 
+    VisualElement populationXAxis;
+    VisualElement populationYAxis;
+
+    Button button50;
+    Button button100;
+    Button button250;
+    Button button500;
+    Button buttonAll;
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
@@ -53,6 +62,20 @@ public class StatisticsDisplay : MonoBehaviour
 
         populationChartRoot = root.Q<VisualElement>("population-chart");
         populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
+        populationXAxis = root.Q<VisualElement>("population-chart-axis-x");
+        populationYAxis = root.Q<VisualElement>("population-chart-axis-y");
+
+        button50 = root.Q<Button>("50dp-button");
+        button100 = root.Q<Button>("100dp-button");
+        button250 = root.Q<Button>("250dp-button");
+        button500 = root.Q<Button>("500dp-button");
+        buttonAll = root.Q<Button>("alldp-button");
+
+        button50.clicked += () => {NumberOfDataToShow = 50; populationChartCanvas.MarkDirtyRepaint();};
+        button100.clicked += () => {NumberOfDataToShow = 100; populationChartCanvas.MarkDirtyRepaint();};
+        button250.clicked += () => {NumberOfDataToShow = 250; populationChartCanvas.MarkDirtyRepaint();};
+        button500.clicked += () => {NumberOfDataToShow = 500; populationChartCanvas.MarkDirtyRepaint();};
+        buttonAll.clicked += () => {/*NumberOfDataToShow = -1;*/};//TODO: handle the all case
 
         geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
         geneHistoryToggle.RegisterValueChangedCallback(ToggleHistory);
@@ -221,13 +244,22 @@ public class StatisticsDisplay : MonoBehaviour
         float h = populationChartCanvas.resolvedStyle.height;
         if (w <= 0 || h <= 0 || history.Count < 2) return;
 
-        float maxValue = history.Values.Max();
+        int minValue = (int)history.Values.Min();
+        int maxValue = (int)history.Values.Max();
 
         List<Vector2> points = new List<Vector2>();
         int counter = 1;
-        foreach(var pair in history)
+        
+        int toSkip = Mathf.Max(0, history.Count - NumberOfDataToShow);
+        int numberOfpoints = NumberOfDataToShow > history.Count ? history.Count : NumberOfDataToShow;
+
+        var chopedHistory = history.Skip(toSkip);
+        float minTime = chopedHistory.First().Key;
+        float maxTime = chopedHistory.Last().Key;
+
+        foreach(var pair in chopedHistory)
         {
-            float x = counter * w / history.Count;
+            float x = counter * w / numberOfpoints;
             float y = h - (pair.Value / maxValue * h);
             points.Add(new Vector2(x,y));
             counter++;
@@ -241,22 +273,46 @@ public class StatisticsDisplay : MonoBehaviour
         painter.lineJoin    = LineJoin.Round;
 
         painter.BeginPath();
-        painter.MoveTo(new Vector2(0,h));
+        painter.MoveTo(new Vector2(0,points[0].y));
         foreach(var point in points)
         {
             painter.LineTo(point);
         }
         painter.Stroke();
 
-        foreach (var pt in points)
-        {
-            // coloured centre
-            painter.fillColor = Color.black;
-            painter.BeginPath();
-            painter.Arc(pt, 5f * 0.5f, 0, 360);
-            painter.Fill();
-        }
+        float maxVal = history.Values.Max();
+        populationChartCanvas.schedule.Execute(() => BuildPopulationAxisLabels(minValue, maxValue, minTime,maxTime));
+    }
 
+    void BuildPopulationAxisLabels(int minPopulation, int maxPopulation, float minTime, float maxTime)
+    {
+        // ── Y-axis (population values, top = max, bottom = min) ───────────
+        populationYAxis.Clear();
+        int ySteps = 5;
+        for (int i = ySteps; i >= 0; i--)
+        {
+            int value = Mathf.RoundToInt(Mathf.Lerp(minPopulation, maxPopulation, i / (float)ySteps));
+            var lbl = new Label(FormatAxisValue(value));
+            lbl.AddToClassList("axis-text");
+            populationYAxis.Add(lbl);
+        }
+    
+        // ── X-axis (time values, left = minTime, right = maxTime) ─────────
+        populationXAxis.Clear();
+        int xSteps = 5;
+        for (int i = 0; i <= xSteps; i++)
+        {
+            float time = Mathf.Lerp(minTime, maxTime, i / (float)xSteps);
+            var lbl = new Label($"{time:F0}s");
+            lbl.AddToClassList("axis-text");
+            populationXAxis.Add(lbl);
+        }
+    }
+
+    string FormatAxisValue(float v)
+    {
+        return v >= 1000 ? $"{v / 1000f:F1}k" :
+        Mathf.Approximately(v, Mathf.Round(v)) ? ((int)Mathf.Round(v)).ToString() : v.ToString("F1");
     }
 
     void DrawGeneHistoryChart(MeshGenerationContext ctx)
@@ -271,11 +327,15 @@ public class StatisticsDisplay : MonoBehaviour
 
         List<Vector2> points = new List<Vector2>();
         int counter = 1;
-        foreach(var pair in history)
+        int NumberOfDataToShow = 100;
+        int toSkip = Mathf.Max(0, history.Count - NumberOfDataToShow);
+        int numberOfpoints = NumberOfDataToShow > history.Count ? history.Count : NumberOfDataToShow;
+
+        foreach (var pair in history.Skip(toSkip))
         {
-            float x = counter * w / history.Count;
+            float x = counter * w / numberOfpoints;
             float y = h - (pair.Value / maxValue * h);
-            points.Add(new Vector2(x,y));
+            points.Add(new Vector2(x, y));
             counter++;
         }
 
@@ -287,10 +347,10 @@ public class StatisticsDisplay : MonoBehaviour
         painter.lineJoin    = LineJoin.Round;
 
         painter.BeginPath();
-        painter.MoveTo(new Vector2(0,h));
-        foreach(var point in points)
+        painter.MoveTo(new Vector2(0,points[0].y));
+        for(int i = 1; i < points.Count; i++)
         {
-            painter.LineTo(point);
+            painter.LineTo(points[i]);
         }
         painter.Stroke();
 
@@ -299,7 +359,7 @@ public class StatisticsDisplay : MonoBehaviour
             // coloured centre
             painter.fillColor = Color.black;
             painter.BeginPath();
-            painter.Arc(pt, 5f * 0.5f, 0, 360);
+            painter.Arc(pt, 2.5f * (1 - numberOfpoints / NumberOfDataToShow), 0, 360);
             painter.Fill();
         }
     }
