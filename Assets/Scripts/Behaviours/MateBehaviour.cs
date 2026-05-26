@@ -4,7 +4,6 @@ class MateBehaviour : SteeringBehaviour
 {
     public enum State{
         Searching,
-        Found,
         MovingToPartner,
         Mating
     }
@@ -41,22 +40,14 @@ class MateBehaviour : SteeringBehaviour
                 Wander();
                 if (IsCompatibleMate(potentialMate))
                 {
-                    state = State.Found;
-                }
-                break;
-            case State.Found:
-                if((potentialMate.getCurrentBehaviour() as MateBehaviour).RecieveProposal(this.animal))
-                {
-                    Commit(potentialMate);
-                    state = State.MovingToPartner;
-                }
-                else
-                {
-                    state = State.Searching;
+                    if((potentialMate.getCurrentBehaviour() as MateBehaviour).RecieveProposal(this.animal))
+                    {
+                        Commit(potentialMate);
+                        state = State.MovingToPartner;
+                    }
                 }
                 break;
             case State.MovingToPartner:
-
                 Seek(partner.transform.position);
             #if UNITY_EDITOR
                 Debug.DrawLine(position, partner.transform.position, Color.red);

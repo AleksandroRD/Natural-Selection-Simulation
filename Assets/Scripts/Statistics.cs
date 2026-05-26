@@ -8,7 +8,7 @@ public class Statistics : MonoBehaviour
     static readonly Dictionary<string, Dictionary<Guid, float>> geneRecords = new Dictionary<string, Dictionary<Guid, float>>();
     static readonly Dictionary<string, SortedDictionary<float, float>> geneHistoryAvarage = new Dictionary<string, SortedDictionary<float, float>>();
     static readonly Dictionary<string,int> population = new Dictionary<string, int>();
-    static readonly Dictionary<string, SortedDictionary<float, float>> populationHistory = new Dictionary<string, SortedDictionary<float, float>>();
+    static readonly Dictionary<string, SortedDictionary<float, int>> populationHistory = new Dictionary<string, SortedDictionary<float, int>>();
 
     public static event Action<string> OnGeneStatisticsUpdated;
     public static event Action OnPopulationUpdated;
@@ -29,7 +29,7 @@ public class Statistics : MonoBehaviour
         return population[animalName];
     }
 
-    public static SortedDictionary<float, float> GetPopulationHistory(string animalName)
+    public static SortedDictionary<float, int> GetPopulationHistory(string animalName)
     {
         if(!populationHistory.ContainsKey(animalName)) { return null; }
         return populationHistory[animalName];
@@ -68,7 +68,7 @@ public class Statistics : MonoBehaviour
     { 
         if (!populationHistory.ContainsKey(creatureName) || !population.ContainsKey(creatureName))
         {
-            populationHistory.Add(creatureName, new SortedDictionary<float, float>());
+            populationHistory.Add(creatureName, new SortedDictionary<float, int>());
             populationHistory[creatureName].Add(0,0);
             population.Add(creatureName,0);
         }

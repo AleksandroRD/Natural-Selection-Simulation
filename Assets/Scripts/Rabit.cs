@@ -18,7 +18,7 @@ public class Rabbit : Animal
         this.Genome = genome;
 
         sensorySystem = GetComponent<SensoryNervousSystem>();
-        CurrentEnergy = 100.0f;
+        CurrentEnergy = 50.0f;
         
         foreach(var gene in Genome.genes)
         {
