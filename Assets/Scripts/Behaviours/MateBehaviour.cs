@@ -40,20 +40,28 @@ class MateBehaviour : SteeringBehaviour
                 Wander();
                 if (IsCompatibleMate(potentialMate))
                 {
-                    if((potentialMate.getCurrentBehaviour() as MateBehaviour).RecieveProposal(this.animal))
+                    if(potentialMate.getCurrentBehaviour<MateBehaviour>().RecieveProposal(this.animal))
                     {
                         Commit(potentialMate);
-                        state = State.MovingToPartner;
+                        break;
                     }
                 }
                 break;
             case State.MovingToPartner:
+                if (partner == null)
+                {
+                    state = State.Searching;
+                    partner = null;
+                    break;
+                }
+
                 Seek(partner.transform.position);
             #if UNITY_EDITOR
                 Debug.DrawLine(position, partner.transform.position, Color.red);
             #endif
                 if(HasArrived(partner.transform.position))
                 {
+                    Stop();
                     timer.Start();
                     state = State.Mating;
                 }
@@ -80,7 +88,12 @@ class MateBehaviour : SteeringBehaviour
 
     private bool IsCompatibleMate(Animal candidate)
     {
-        return candidate != null && candidate.Gender != animal.Gender && candidate.isSearchingMate();
+        return candidate != null && candidate.Gender != animal.Gender && (candidate.getCurrentBehaviour() as MateBehaviour)?.state == State.Searching;
+    }
+
+    public bool isSearchingMate()
+    {
+        return state == State.Searching;
     }
 
     private void Mate(Animal mate)

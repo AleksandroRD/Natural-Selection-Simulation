@@ -1219,7 +1219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ebfc33f50fa7af4298a48c556838715, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Simulation
-  timeScale: 10
+  timeScale: 5
   simulationBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 30, y: 5, z: 30}

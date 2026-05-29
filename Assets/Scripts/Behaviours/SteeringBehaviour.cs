@@ -23,7 +23,7 @@ public abstract class SteeringBehaviour : Behaviour
     /// Sum of the all forces acting on the body
     /// </summary>
     private Vector3 steeringForce = Vector3.zero;
-    private Vector3 steeringVelocity;
+    public Vector3 steeringVelocity { get; private set; }
 
     public SteeringBehaviour(GameObject agent, float maxSpeed)
     {
@@ -70,9 +70,16 @@ public abstract class SteeringBehaviour : Behaviour
         steeringForce += seekForce;
     }
 
+    protected void Pursue(Vector3 target, Vector3 velocity)
+    {
+        Seek(target + velocity);
+    }
+
+    //TODO: Implementation is false, make it correct
     public void Flee(Vector3 fleePoint)
     {
-        Seek(fleePoint * -1);
+        float distance = Vector3.Distance(fleePoint, position);
+        Seek((fleePoint - position).normalized * -1 * distance);
     }
 
     public void Wander()

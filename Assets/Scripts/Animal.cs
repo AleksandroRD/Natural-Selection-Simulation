@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum Gender
@@ -25,14 +26,14 @@ public abstract class Animal : SimulationEntity
         return MatingUrge >= 100f;
     }
 
-    public bool isSearchingMate()
-    {
-        return (CurrentBehaviour as MateBehaviour)?.state == MateBehaviour.State.Searching;
-    }
-
     public Behaviour getCurrentBehaviour()
     {
         return CurrentBehaviour;
+    }
+
+    public T getCurrentBehaviour<T>() where T : Behaviour
+    {
+        return CurrentBehaviour as T ?? throw new InvalidCastException($"CurrentBehaviour is not of type {typeof(T)}");
     }
 
     public abstract void ReplicateFemale(Genome otherGenome);
