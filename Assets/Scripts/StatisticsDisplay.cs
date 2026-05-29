@@ -23,14 +23,17 @@ public class StatisticsDisplay : MonoBehaviour
     bool showGeneHistory = false;
     int NumberOfDataToShow = 100;
 
-    private Dictionary<int, (float alpha, string text)> timeLabelData = new();
-    private Dictionary<int, (float alpha, string text)> valueLabeldata = new();
+    private Dictionary<int, (float alpha, string text)> populationTimeLabelData = new();
+    private Dictionary<int, (float alpha, string text)> populationValueLabeldata = new();
+
+    private Dictionary<int, (float alpha, string text)> geneTimeLabelData = new();
+    private Dictionary<int, (float alpha, string text)> geneValueLabeldata = new();
 
     private const float LABEL_FADE = 0.08f;
     private const int   MAX_LABELS = 30;    // safety cap
 
     private float valueInterval;
-    private Vector2 _cursorLocalPosition;
+    private Vector2 cursorLocalPosition;
 
     EnumField      modeDropdown;
 
@@ -44,18 +47,28 @@ public class StatisticsDisplay : MonoBehaviour
     VisualElement  geneHistoryCanvas;
     VisualElement  geneDistributionRoot;
     VisualElement  geneHistoryRoot;
-
+    Label          geneHistoryTooltipLabel;
+    VisualElement  secondGeneTop;
+    Label          populationToolTipLabel;
     VisualElement  populationChartCanvas;
     VisualElement  populationChartRoot;
 
-    VisualElement populationXAxis;
-    VisualElement populationYAxis;
+    VisualElement  populationXAxis;
+    VisualElement  populationYAxis;
 
-    Button button50;
-    Button button100;
-    Button button250;
-    Button button500;
-    Button buttonAll;
+    VisualElement  geneXAxis;
+    VisualElement  geneYAxis;
+    Button         button50;
+    Button         button100;
+    Button         button250;
+    Button         button500;
+    Button         buttonAll;
+
+    Button         geneButton50;
+    Button         geneButton100;
+    Button         geneButton250;
+    Button         geneButton500;
+    Button         geneButtonAll;
 
 #region Setup
     void OnEnable()
@@ -73,11 +86,16 @@ public class StatisticsDisplay : MonoBehaviour
         geneHistoryCanvas = root.Q<VisualElement>("gene-history-chart-canvas");
         geneHistoryRoot = root.Q<VisualElement>("gene-history-chart");
         geneDistributionRoot = root.Q<VisualElement>("gene-distribution-chart");
+        geneXAxis = root.Q<VisualElement>("gene-history-axis-x");
+        geneYAxis = root.Q<VisualElement>("gene-history-axis-y");
+        geneHistoryTooltipLabel = root.Q<Label>("gene-chart-history-tootip-label");
+        secondGeneTop = root.Q<VisualElement>("second-gene-top");
 
         populationChartRoot = root.Q<VisualElement>("population-chart");
         populationChartCanvas = root.Q<VisualElement>("population-chart-canvas");
         populationXAxis = root.Q<VisualElement>("population-chart-axis-x");
         populationYAxis = root.Q<VisualElement>("population-chart-axis-y");
+        populationToolTipLabel = root.Q<Label>("population-chart-tooltip-label");
 
         button50 = root.Q<Button>("50dp-button");
         button100 = root.Q<Button>("100dp-button");
@@ -85,11 +103,23 @@ public class StatisticsDisplay : MonoBehaviour
         button500 = root.Q<Button>("500dp-button");
         buttonAll = root.Q<Button>("alldp-button");
 
+        geneButton50 = root.Q<Button>("g-50dp-button");
+        geneButton100 = root.Q<Button>("g-100dp-button");
+        geneButton250 = root.Q<Button>("g-250dp-button");
+        geneButton500 = root.Q<Button>("g-500dp-button");
+        geneButtonAll = root.Q<Button>("g-alldp-button");
+
+        geneButton50.clicked += () => {NumberOfDataToShow = 50; geneHistoryCanvas.MarkDirtyRepaint();};
+        geneButton100.clicked += () => {NumberOfDataToShow = 100; geneHistoryCanvas.MarkDirtyRepaint();};
+        geneButton250.clicked += () => {NumberOfDataToShow = 250; geneHistoryCanvas.MarkDirtyRepaint();};
+        geneButton500.clicked += () => {NumberOfDataToShow = 500; geneHistoryCanvas.MarkDirtyRepaint();};
+        geneButtonAll.clicked += () => {NumberOfDataToShow = -1; geneHistoryCanvas.MarkDirtyRepaint();};
+
         button50.clicked += () => {NumberOfDataToShow = 50; populationChartCanvas.MarkDirtyRepaint();};
         button100.clicked += () => {NumberOfDataToShow = 100; populationChartCanvas.MarkDirtyRepaint();};
         button250.clicked += () => {NumberOfDataToShow = 250; populationChartCanvas.MarkDirtyRepaint();};
         button500.clicked += () => {NumberOfDataToShow = 500; populationChartCanvas.MarkDirtyRepaint();};
-        buttonAll.clicked += () => {NumberOfDataToShow = -1;};
+        buttonAll.clicked += () => {NumberOfDataToShow = -1; populationChartCanvas.MarkDirtyRepaint();};
 
         geneDropdown.RegisterValueChangedCallback(OnGeneDropdownChanged);
         geneHistoryToggle.RegisterValueChangedCallback(ToggleHistory);
@@ -103,7 +133,8 @@ public class StatisticsDisplay : MonoBehaviour
 
         populationChartCanvas.RegisterCallback<PointerMoveEvent>((evt) =>
         {
-            _cursorLocalPosition = evt.localPosition;
+            cursorLocalPosition = evt.localPosition;
+            populationToolTipLabel.text = populationChartCanvas.tooltip;
             populationChartCanvas.MarkDirtyRepaint(); 
         });
 
@@ -114,8 +145,30 @@ public class StatisticsDisplay : MonoBehaviour
 
         populationChartCanvas.RegisterCallback<PointerOutEvent>((ctx) =>
         {
-            _cursorLocalPosition = Vector3.zero;
+            populationToolTipLabel.text = "";
+            cursorLocalPosition = Vector3.zero;
             UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            populationChartCanvas.MarkDirtyRepaint(); 
+        });
+
+        geneHistoryCanvas.RegisterCallback<PointerMoveEvent>((evt) =>
+        {
+            cursorLocalPosition = evt.localPosition;
+            geneHistoryTooltipLabel.text = geneHistoryCanvas.tooltip;
+            geneHistoryCanvas.MarkDirtyRepaint(); 
+        });
+
+        geneHistoryCanvas.RegisterCallback<PointerOverEvent>((ctx) =>
+        {
+            UnityEngine.Cursor.SetCursor(precisionCursor, new Vector2(precisionCursor.width/2,precisionCursor.height/2),CursorMode.Auto);
+        });
+
+        geneHistoryCanvas.RegisterCallback<PointerOutEvent>((ctx) =>
+        {
+            geneHistoryTooltipLabel.text = "";
+            cursorLocalPosition = Vector3.zero;
+            UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            geneHistoryCanvas.MarkDirtyRepaint(); 
         });
     }
 
@@ -138,13 +191,15 @@ public class StatisticsDisplay : MonoBehaviour
         {
             geneDistributionRoot.style.display = DisplayStyle.None;
             geneHistoryRoot.style.display = DisplayStyle.Flex;
-            
+            secondGeneTop.style.display = DisplayStyle.Flex;
+
             showGeneHistory = true;
         }
         else
         {
             geneDistributionRoot.style.display = DisplayStyle.Flex;
             geneHistoryRoot.style.display = DisplayStyle.None;
+            secondGeneTop.style.display = DisplayStyle.None;
 
             showGeneHistory = false;
         }
@@ -197,17 +252,18 @@ public class StatisticsDisplay : MonoBehaviour
 
         if(chosenGene != geneName) { return; }
 
+        float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
+
         if (showGeneHistory)
         {
+            float avg = recordValues.Average();
+            geneAverageLabel.text = $"Avg: {avg:F2}";
             geneHistoryCanvas.MarkDirtyRepaint();
         }
         else
         {
-            float[] recordValues = Statistics.GetGeneRecordsAsArray(geneName);
-            int valueCount = recordValues.Length;
-
             //prevents division by 0
-            if(valueCount < 2){ return; }
+            if(recordValues.Length < 2){ return; }
 
             float minVal = float.MaxValue, maxVal = float.MinValue, sum = 0f;
             foreach (var value in recordValues)
@@ -217,7 +273,7 @@ public class StatisticsDisplay : MonoBehaviour
                 sum += value;
             }
 
-            float avg = sum / (float)valueCount;
+            float avg = sum / (float)recordValues.Length;
             geneAverageLabel.text = $"Avg: {avg:F2}";
 
             RedrawHistogram(recordValues, minVal, maxVal);
@@ -282,7 +338,7 @@ public class StatisticsDisplay : MonoBehaviour
         
         float w = populationChartCanvas.resolvedStyle.width;
         float h = populationChartCanvas.resolvedStyle.height;
-        if (w <= 0 || h <= 0 || history.Count < 2) return;
+        if (w <= 0 || h <= 0 || history.Count < 2) { return; }
 
         var chopedHistory = NumberOfDataToShow == -1 ? history : history.Skip(Mathf.Max(0, history.Count - NumberOfDataToShow));
 
@@ -295,7 +351,7 @@ public class StatisticsDisplay : MonoBehaviour
         var painter = ctx.painter2D;
         
         //draw line for current value
-        painter.strokeColor = Color.lightGray;
+        painter.strokeColor = lineColor;
         painter.lineWidth   = 1f;
         painter.SetDashPattern(8f,5f);
         painter.BeginPath();
@@ -304,11 +360,22 @@ public class StatisticsDisplay : MonoBehaviour
         painter.Stroke();
         painter.SetDashPattern(null);
         //draw end
-        
+
+        //draw circle on current value
+        painter.strokeColor = Color.white;
+        painter.fillColor = lineColor;
+        painter.lineWidth = 2f;
+        painter.BeginPath();
+        painter.Arc(new Vector2(w, h - Mathf.InverseLerp(minValue, maxValue, chopedHistory.Last().Value) * h), 6f, 0f, 360f);
+        painter.Fill();
+        painter.Stroke();
+        //end draw
+
         //draw main chart line
-        painter.lineWidth   = lineWidth;
-        painter.lineJoin    = LineJoin.Round;
         painter.strokeColor = lineColor;
+        painter.lineWidth   = lineWidth;
+        painter.lineCap     = LineCap.Round;
+        painter.lineJoin    = LineJoin.Round;
 
         painter.BeginPath();
         painter.MoveTo(new Vector2(0,h - Mathf.InverseLerp(minValue,maxValue,chopedHistory.First().Value) * h));
@@ -317,7 +384,7 @@ public class StatisticsDisplay : MonoBehaviour
         foreach(var pair in chopedHistory)
         {
             //this way of calculating x makes point evenly spread throughout the graph, which makes it look better
-            float x = counter * w / chopedHistory.Count();
+            float x = (chopedHistory.Count() > 1) ? counter * w / (chopedHistory.Count() - 1): 0;
             float y = h - Mathf.InverseLerp(minValue, maxValue,pair.Value) * h;
             
             painter.LineTo(new Vector2(x, y));
@@ -327,54 +394,96 @@ public class StatisticsDisplay : MonoBehaviour
         //draw end
 
         //draw horizontal cursor line
-        if(_cursorLocalPosition != Vector2.zero)
-        { 
+        if (cursorLocalPosition != Vector2.zero)
+        {
+            float step = w / (chopedHistory.Count() - 1);
+
+            // Snap cursor X to nearest discrete column index
+            int snappedIndex = Mathf.RoundToInt(cursorLocalPosition.x / step);
+            snappedIndex = Mathf.Clamp(snappedIndex, 0, chopedHistory.Count() - 1);
+            float snappedX = snappedIndex * step;
+
+            var keyValuePair = chopedHistory.ElementAt(snappedIndex); 
+            float snappedY = h - Mathf.InverseLerp(minValue, maxValue, keyValuePair.Value) * h;
+
+            populationChartCanvas.tooltip = $"{keyValuePair.Key:F2}s - {keyValuePair.Value}";
+            // Vertical cursor line
             painter.strokeColor = Color.lightGray;
             painter.lineWidth = 1f;
             painter.BeginPath();
-            //clamp x to descrete values
-            float x  = Mathf.RoundToInt(_cursorLocalPosition.x / (w / chopedHistory.Count())) * (w / chopedHistory.Count());
-            
-            painter.MoveTo(new Vector2(x,h));
-            painter.LineTo(new Vector2(x,0));
+            painter.MoveTo(new Vector2(snappedX, h));
+            painter.LineTo(new Vector2(snappedX, snappedY));
             painter.Stroke();
+
+            // Circle fill (line color)
+            painter.fillColor = lineColor;
+            painter.BeginPath();
+            painter.Arc(new Vector2(snappedX, snappedY), 4f, 0f, 360f);
+            painter.Fill();
         }
         //end draw
 
-        populationChartCanvas.schedule.Execute(() => BuildTimeAxisLabels(minTime,maxTime, Time.deltaTime));
-        populationChartCanvas.schedule.Execute(() => BuildValueAxisLabels(minValue, maxValue));
+        populationChartCanvas.schedule.Execute(() => BuildTimeAxisLabels(minTime, maxTime, populationXAxis));
+        populationChartCanvas.schedule.Execute(() => BuildValueAxisLabels(minValue, maxValue, populationYAxis));
     }
 
-    void BuildValueAxisLabels(int minPopulation, int maxPopulation)
+    void BuildValueAxisLabels(float minPopulation, float maxPopulation, VisualElement canvas)
     {
-        const float MIN_GAP = 30f;
-        const float FADE_ZONE  = 25f;
+        const float MIN_GAP   = 30f;
+        const float FADE_ZONE = 10f;
+        float chartH  = populationChartCanvas.resolvedStyle.height;
+        float range   = maxPopulation - minPopulation;
+        float pxPerUnit = chartH / Mathf.Max(range, 1);
 
-        float chartH = populationChartCanvas.resolvedStyle.height;
+        valueInterval = ValueInterval(range, pxPerUnit, MIN_GAP, valueInterval);
 
-        int valueRange = maxPopulation - minPopulation;
-        float pxPerUnit = chartH / Mathf.Max(valueRange, 1);
-        valueInterval = PickInterval(valueRange, pxPerUnit, MIN_GAP, valueInterval);
-        while (valueInterval * pxPerUnit < 30f && valueInterval < valueRange)
+        float Normalize(float v)    => (v - minPopulation) / Mathf.Max(range, 1);
+        float EdgeAlpha(float norm)
         {
-            valueInterval *= 2;
-        }
-
-        float NormalizeValue(int v) => (v - minPopulation) / (float)Mathf.Max(valueRange, 1);
-
-        float EdgeAlpha(float y)
-        {      
-            float fromTop   = (1f - y) * chartH; // Y=0 is top in screen space
-            float fromBot   = chartH - fromTop;
-            float fromEdge  = Mathf.Min(fromTop, fromBot);
-
+            float fromEdge = Mathf.Min(norm, 1f - norm) * chartH;  // screen: y=0 is top
             if (fromEdge >= FADE_ZONE) return 1f;
             if (fromEdge <= 0f)        return 0f;
-
             return fromEdge / FADE_ZONE;
         }
 
-        // Generate labels: current view + 1 interval buffer.
+        float ValueInterval(float valRange, float pxPerUnit, float minGap, float prev)
+        {
+            if (prev > 0)
+            {
+                float px = prev * pxPerUnit;
+                if (px >= minGap * 0.5 && px <= minGap * 4)
+                    return prev;
+            }
+
+            float[][] divisorSets =
+            {
+                new float[] { 2, 2.5f, 2 },
+                new float[] { 2, 2, 2.5f },
+                new float[] { 2.5f, 2, 2 }
+            };
+
+            float best = float.PositiveInfinity;
+
+            foreach (var divs in divisorSets)
+            {
+                float span = Mathf.Pow(10, Mathf.Ceil(Mathf.Log10(valRange)));
+                int i = 0;
+
+                while ((span / divs[i % 3]) * pxPerUnit >= minGap)
+                {
+                    span /= divs[i % 3];
+                    i++;
+                }
+
+                if (span < best)
+                    best = span;
+            }
+
+            return float.IsPositiveInfinity(best)
+                ? valRange / 5
+                : best;
+        }
+
         var targets = new HashSet<int>();
         int first = Mathf.CeilToInt((float)(minPopulation - valueInterval) / valueInterval) * (int)valueInterval;
         for (int t = first; t <= maxPopulation + valueInterval && targets.Count < MAX_LABELS; t += (int)valueInterval)
@@ -382,246 +491,172 @@ public class StatisticsDisplay : MonoBehaviour
             targets.Add(t);
         }
 
-        foreach (int key in targets)
-        {
-            string text = FormatAxisValue((int)key);
-            if (!valueLabeldata.TryGetValue(key, out var state))
-            {
-                
-                valueLabeldata[key] = (0f, text );
-            }
-            else 
-            { 
-                state.text = text; valueLabeldata[key] = state; 
-            }
-        }
-
-        foreach (var key in valueLabeldata.Keys.ToList())
-        {
-            var state = valueLabeldata[key];
-            float target = targets.Contains(key) ? EdgeAlpha(NormalizeValue(key)) : 0f;
-
-            float next = Mathf.Lerp(state.alpha, target, LABEL_FADE);
-
-            if (Mathf.Abs(next - target) < 0.02f) { next = target; }
-
-            if (next < 0.01f && target == 0f) { valueLabeldata.Remove(key); continue; }
-
-            state.alpha = next;
-            valueLabeldata[key] = state;
-        }
-
-        var visibleLabels = new List<(float value, float alpha, string text)>();
-        foreach (var (key, state) in valueLabeldata)
-        {
-            if (state.alpha < 0.02f) continue;
-
-            float value = NormalizeValue(key);
-
-            if (value < -0.05f || value > 1.05f) continue;
-
-            visibleLabels.Add((value, state.alpha, state.text));
-        }
-        visibleLabels.Sort((a, b) => b.value.CompareTo(a.value)); // top→bottom
-
-        var drawnLabels = new List<(float value, float alpha, string text)>();
-        foreach (var label in visibleLabels)
-        {
-            if (drawnLabels.Count > 0)
-            {
-                var prev    = drawnLabels[^1];
-                float gapPx = Mathf.Abs(label.value - prev.value) * chartH;
-                if (gapPx < MIN_GAP)
-                {
-                    if (label.alpha > prev.alpha) drawnLabels[^1] = label;
-                    continue;
-                }
-            }
-            drawnLabels.Add(label);
-        }
-
-        populationYAxis.Clear();
-        foreach (var (value, alpha, text) in drawnLabels)
+        void DrawLabel(VisualElement container, float norm, float alpha, string text)
         {
             var lbl = new Label(text);
             lbl.AddToClassList("axis-text");
-            lbl.style.opacity  = alpha;
-            lbl.style.position = Position.Absolute;
-            // value=1 → bottom of chart → top offset = (1-value)*chartH = 0... flip:
-            lbl.style.top       = (1f - value) * chartH;
+            lbl.style.opacity   = alpha;
+            lbl.style.position  = Position.Absolute;
+            lbl.style.top       = (1f - norm) * chartH;  // flip: value=1 → bottom of chart
             lbl.style.translate = new StyleTranslate(new Translate(0, Length.Percent(-50)));
-            populationYAxis.Add(lbl);
+            container.Add(lbl);
         }
-    }           
 
-    void BuildTimeAxisLabels(float minTime, float maxTime, float dt)           
+        string FormatAxisValue(float value)
+        {
+            return value >= 1000 ? $"{value / 1000f:F1}k" : Mathf.Approximately(value, Mathf.Round(value)) ? ((int)Mathf.Round(value)).ToString() : value.ToString("F1");
+        }
+
+        var cfg = new AxisConfig(
+            minGap:    MIN_GAP,
+            fadeZone:  FADE_ZONE,
+            chartSize: chartH,
+            minValue:  minPopulation,
+            maxValue:  maxPopulation,
+            labelData: populationValueLabeldata,
+            normalize: v   => Normalize(v),
+            formatKey: key => FormatAxisValue(key),
+            keyToData: key => key,              // Y-axis: key IS the data value
+            edgeAlpha: Normalize => EdgeAlpha(Normalize),
+            targets:   targets,
+            drawLabel: DrawLabel);
+
+        BuildAxisLabels(cfg, canvas);
+    }
+    void BuildTimeAxisLabels(float minTime, float maxTime, VisualElement canvas)
     {
-        const float MIN_GAP = 45f;   // px gap between label centres
-        const float FADE_ZONE  = 50f;
-
-        float chartW = populationChartCanvas.resolvedStyle.width;
-
+        const float MIN_GAP   = 45f;
+        const float FADE_ZONE = 50f;
+        float chartW   = canvas.resolvedStyle.width;
         float timeSpan = maxTime - minTime;
-        float interval = NiceTimeInterval(timeSpan);
+        float interval = TimeInterval(timeSpan);
         float pxPerSec = chartW / timeSpan;
 
-        // Widen interval until labels are at least MIN_GAP px apart
         while (interval * pxPerSec < MIN_GAP && interval < timeSpan)
-        {
             interval *= 2f;
-        }
 
-        // Convert time → normalised X position [0..1]
-        float NormalizeTime(float t) => (t - minTime) / timeSpan;
-
-        float EdgeAlpha(float x)
-        {    
-            float fromLeft  = x * chartW;
-            float fromRight = chartW - fromLeft;
-            float fromEdge  = Mathf.Min(fromLeft, fromRight);
-
+        float Normalize(float t)    => (t - minTime) / timeSpan;
+        float EdgeAlpha(float norm)
+        {
+            float fromEdge = Mathf.Min(norm, 1f - norm) * chartW;
             if (fromEdge >= FADE_ZONE) return 1f;
             if (fromEdge <= 0f)        return 0f;
-
             return fromEdge / FADE_ZONE;
         }
 
-        // Build the set of target timestamps (rounded to avoid float keys)
+        static float TimeInterval(float spanSecs)
+        {
+            float[] steps = { 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600, 7200, 21600, 86400 };
+            float target  = spanSecs / 6f;
+            foreach (float state in steps)
+            {
+                if (state >= target) return state;
+            }
+            return steps[^1];
+        }
+
         var targets = new HashSet<int>();
         float first = Mathf.Ceil((minTime - interval) / interval) * interval;
-
         for (float t = first; t <= maxTime + interval && targets.Count < MAX_LABELS; t += interval)
-        {
-            targets.Add(Mathf.RoundToInt(t * 100));  // key = time * 100
-        }
+            targets.Add(Mathf.RoundToInt(t * 100));      // key = time * 100
 
-        // Create / update label states
-        foreach (int key in targets)
-        {
-            string text = $"{key / 100f:F0}s";
-            if (!timeLabelData.TryGetValue(key, out var state))
-                timeLabelData[key] = (0f, text);
-            else
-            {
-                state.text = text;
-                timeLabelData[key] = state;
-            }
-        }
-
-        // Update alphas
-        foreach (var key in timeLabelData.Keys.ToList())
-        {
-            var label = timeLabelData[key];
-            float target = targets.Contains(key) ? EdgeAlpha(NormalizeTime(key / 100f)) : 0f;
-
-            float next = Mathf.Lerp(label.alpha, target, LABEL_FADE);
-            if (Mathf.Abs(next - target) < 0.02f) { next = target; }
-
-            if (next < 0.01f && target == 0f) { timeLabelData.Remove(key); continue; }
-
-            timeLabelData[key] = (next, label.text);
-        }
-
-        // Collect visible labels, sort by position
-        var xVisible = new List<(float time, float alpha, string text)>();
-        foreach (var (key, state) in timeLabelData)
-        {
-            if (state.alpha < 0.02f) continue;
-
-            float time = NormalizeTime(key / 100f);
-
-            if (time < -0.05f || time > 1.05f) continue;
-
-            xVisible.Add((time, state.alpha, state.text));
-        }
-        xVisible.Sort((a, b) => a.time.CompareTo(b.time));
-
-        // Overlap resolution — keep the higher-alpha label when two collide
-        var drawnLabels = new List<(float time, float alpha, string text)>();
-        foreach (var label in xVisible)
-        {
-            if (drawnLabels.Count > 0)
-            {
-                var prev    = drawnLabels[^1];
-                float gap = (label.time - prev.time) * chartW;
-                if (gap < MIN_GAP)
-                {
-                    if (label.alpha > prev.alpha)
-                        drawnLabels[^1] = label;   // swap in the more-visible one
-                    continue;
-                }
-            }
-            drawnLabels.Add(label);
-        }
-
-        // Write UI labels
-        populationXAxis.Clear();
-        foreach (var (time, alpha, text) in drawnLabels)
+        void DrawLabel(VisualElement container, float norm, float alpha, string text)
         {
             var lbl = new Label(text);
             lbl.AddToClassList("axis-text");
-            lbl.style.opacity = alpha;
-            // Position absolutely so overlap removal has meaning
-            lbl.style.position = Position.Absolute;
-            lbl.style.left     = time * chartW;
+            lbl.style.opacity   = alpha;
+            lbl.style.position  = Position.Absolute;
+            lbl.style.left      = norm * chartW;
             lbl.style.translate = new StyleTranslate(new Translate(Length.Percent(-50), 0));
-            populationXAxis.Add(lbl);
+            container.Add(lbl);
         }
-  
+
+        var cfg = new AxisConfig(
+            minGap:    MIN_GAP,
+            fadeZone:  FADE_ZONE,
+            chartSize: chartW,
+            minValue:  minTime,
+            maxValue:  maxTime,
+            labelData: populationTimeLabelData,
+            normalize: v   => Normalize(v),
+            formatKey: key => $"{key / 100f:F0}s",
+            keyToData: key => key / 100f,               // X-axis: key = time * 100
+            edgeAlpha: norm => EdgeAlpha(norm),
+            targets:   targets,
+            drawLabel: DrawLabel);
+
+        BuildAxisLabels(cfg, canvas);
     }
-
-    static float NiceTimeInterval(float spanSecs)
+    void BuildAxisLabels(AxisConfig cfg, VisualElement container)
     {
-        float[] steps = { 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600, 7200, 21600, 86400 };
-        float target  = spanSecs / 6f;
-        foreach (float state in steps)
+        // 1. Sync label-state dict with this frame's targets
+        foreach (int key in cfg.Targets)
         {
-            if (state >= target) return state;
-        }
-        return steps[^1];
-    }
-
-    public static float PickInterval(float valRange, float pxPerUnit, float minGap, float prev)
-    {
-        if (prev > 0)
-        {
-            float px = prev * pxPerUnit;
-            if (px >= minGap * 0.5 && px <= minGap * 4)
-                return prev;
-        }
-
-        float[][] divisorSets =
-        {
-            new float[] { 2, 2.5f, 2 },
-            new float[] { 2, 2, 2.5f },
-            new float[] { 2.5f, 2, 2 }
-        };
-
-        float best = float.PositiveInfinity;
-
-        foreach (var divs in divisorSets)
-        {
-            float span = Mathf.Pow(10, Mathf.Ceil(Mathf.Log10(valRange)));
-            int i = 0;
-
-            while ((span / divs[i % 3]) * pxPerUnit >= minGap)
+            string text = cfg.FormatKey(key);
+            if (!cfg.LabelData.TryGetValue(key, out var state))
+                cfg.LabelData[key] = (0f, text);
+            else
             {
-                span /= divs[i % 3];
-                i++;
+                state.text = text;
+                cfg.LabelData[key] = state;
             }
-
-            if (span < best)
-                best = span;
         }
 
-        return float.IsPositiveInfinity(best)
-            ? valRange / 5
-            : best;
-    }
+        // 2. Fade alphas toward target; prune fully-faded labels
+        foreach (int key in cfg.LabelData.Keys.ToList())
+        {
+            var state  = cfg.LabelData[key];
+            float norm = cfg.Normalize(cfg.KeyToData(key));
+            float target = cfg.Targets.Contains(key) ? cfg.EdgeAlpha(norm) : 0f;
 
-    string FormatAxisValue(float value)
-    {
-        return value >= 1000 ? $"{value / 1000f:F1}k" : Mathf.Approximately(value, Mathf.Round(value)) ? ((int)Mathf.Round(value)).ToString() : value.ToString("F1");
+            float next = Mathf.Lerp(state.alpha, target, LABEL_FADE);
+            if (Mathf.Abs(next - target) < 0.02f) next = target;
+
+            if (next < 0.01f && target == 0f) { cfg.LabelData.Remove(key); continue; }
+
+            state.alpha = next;
+            cfg.LabelData[key] = state;
+        }
+
+        // 3. Collect labels that are visible and within range
+        var visible = new List<(float pos, float alpha, string text)>();
+        foreach (var (key, state) in cfg.LabelData)
+        {
+            if (state.alpha < 0.02f) continue;
+
+            float pos = cfg.Normalize(cfg.KeyToData(key));
+            if (pos < -0.05f || pos > 1.05f) continue;
+
+            visible.Add((pos, state.alpha, state.text));
+        }
+
+        // 4. Sort along the axis (ascending position)
+        visible.Sort((a, b) => a.pos.CompareTo(b.pos));
+
+        // 5. Greedy overlap resolution — keep higher-alpha label on collision
+        var drawn = new List<(float pos, float alpha, string text)>();
+        foreach (var label in visible)
+        {
+            if (drawn.Count > 0)
+            {
+                var prev   = drawn[^1];
+                float gap  = Mathf.Abs(label.pos - prev.pos) * cfg.ChartSize;
+                if (gap < cfg.MinGap)
+                {
+                    if (label.alpha > prev.alpha) drawn[^1] = label;
+                    continue;
+                }
+            }
+            drawn.Add(label);
+        }
+
+        // 6. Write UI elements
+        container.Clear();
+        foreach (var (pos, alpha, text) in drawn)
+        {
+            cfg.DrawLabel(container, pos, alpha, text);
+        }
+
     }
 #endregion
 
@@ -644,6 +679,28 @@ public class StatisticsDisplay : MonoBehaviour
 
         var painter = ctx.painter2D;
 
+        //draw line for current value
+        painter.strokeColor = lineColor;
+        painter.lineWidth   = 1f;
+        painter.SetDashPattern(8f,5f);
+        painter.BeginPath();
+        painter.MoveTo(new Vector2(0, h - Mathf.InverseLerp(minValue, maxValue, chopedHistory.Last().Value) * h));
+        painter.LineTo(new Vector2(w, h - Mathf.InverseLerp(minValue, maxValue, chopedHistory.Last().Value) * h));
+        painter.Stroke();
+        painter.SetDashPattern(null);
+        //draw end
+
+        //draw circle on current value
+        painter.strokeColor = Color.white;
+        painter.fillColor = lineColor;
+        painter.lineWidth = 2f;
+        painter.BeginPath();
+        painter.Arc(new Vector2(w, h - Mathf.InverseLerp(minValue, maxValue, chopedHistory.Last().Value) * h), 6f, 0f, 360f);
+        painter.Fill();
+        painter.Stroke();
+        //end draw
+
+        //draw main chart line
         painter.strokeColor = lineColor;
         painter.lineWidth   = lineWidth;
         painter.lineCap     = LineCap.Round;
@@ -653,16 +710,190 @@ public class StatisticsDisplay : MonoBehaviour
         painter.MoveTo(new Vector2(0,h - Mathf.InverseLerp(minValue,maxValue,chopedHistory.First().Value) * h));
 
         int counter = 0;
-        foreach (var pair in chopedHistory)
+        foreach(var pair in chopedHistory)
         {
             //this way of calculating x makes point evenly spread throughout the graph, which makes it look better
-            float x = counter * w / chopedHistory.Count();
+            float x = (chopedHistory.Count() > 1) ? counter * w / (chopedHistory.Count() - 1): 0;
             float y = h - Mathf.InverseLerp(minValue, maxValue,pair.Value) * h;
+            
             painter.LineTo(new Vector2(x, y));
             counter++;
         }
-        
         painter.Stroke();
+        //draw end
+
+        //draw horizontal cursor line
+        if (cursorLocalPosition != Vector2.zero)
+        {
+            float step = w / (chopedHistory.Count() - 1);
+
+            // Snap cursor X to nearest discrete column index
+            int snappedIndex = Mathf.RoundToInt(cursorLocalPosition.x / step);
+            snappedIndex = Mathf.Clamp(snappedIndex, 0, chopedHistory.Count() - 1);
+            float snappedX = snappedIndex * step;
+
+            var keyValuePair = chopedHistory.ElementAt(snappedIndex); 
+            float snappedY = h - Mathf.InverseLerp(minValue, maxValue, keyValuePair.Value) * h;
+
+            geneHistoryCanvas.tooltip = $"{keyValuePair.Key:F2}s - {keyValuePair.Value}";
+            // Vertical cursor line
+            painter.strokeColor = Color.lightGray;
+            painter.lineWidth = 1f;
+            painter.BeginPath();
+            painter.MoveTo(new Vector2(snappedX, h));
+            painter.LineTo(new Vector2(snappedX, snappedY));
+            painter.Stroke();
+
+            // Circle fill (line color)
+            painter.fillColor = lineColor;
+            painter.BeginPath();
+            painter.Arc(new Vector2(snappedX, snappedY), 4f, 0f, 360f);
+            painter.Fill();
+        }
+        //end draw
+
+        geneHistoryCanvas.schedule.Execute(() => BuildTimeAxisLabels(minTime, maxTime, geneXAxis));
+        geneHistoryCanvas.schedule.Execute(() => BuildFloatValueAxisLabels(minValue, maxValue, geneYAxis));
     }
+
+    void BuildFloatValueAxisLabels(float minValue, float maxValue, VisualElement canvas)
+        {
+        const float MIN_GAP   = 30f;
+        const float FADE_ZONE = 10f;
+        float chartH  = canvas.resolvedStyle.height;
+        float range   = maxValue - minValue;
+        float pxPerUnit = chartH / Mathf.Max(range, 0.0001f);
+
+        valueInterval = ValueInterval(range, pxPerUnit, MIN_GAP, valueInterval);
+
+        float Normalize(float v)    => (v - minValue) / Mathf.Max(range, 0.0001f);
+        float EdgeAlpha(float norm)
+        {
+            float fromEdge = Mathf.Min(norm, 1f - norm) * chartH;
+            if (fromEdge >= FADE_ZONE) return 1f;
+            if (fromEdge <= 0f)        return 0f;
+            return fromEdge / FADE_ZONE;
+        }
+
+        float ValueInterval(float valRange, float pxPerUnit, float minGap, float prev)
+        {
+            if (prev > 0)
+            {
+                float px = prev * pxPerUnit;
+                if (px >= minGap * 0.5 && px <= minGap * 4)
+                    return prev;
+            }
+
+            float[][] divisorSets =
+            {
+                new float[] { 2, 2.5f, 2 },
+                new float[] { 2, 2, 2.5f },
+                new float[] { 2.5f, 2, 2 }
+            };
+
+            float best = float.PositiveInfinity;
+
+            foreach (var divs in divisorSets)
+            {
+                float span = Mathf.Pow(10, Mathf.Ceil(Mathf.Log10(valRange)));
+                int i = 0;
+
+                while ((span / divs[i % 3]) * pxPerUnit >= minGap)
+                {
+                    span /= divs[i % 3];
+                    i++;
+                }
+
+                if (span < best)
+                    best = span;
+            }
+
+            return float.IsPositiveInfinity(best)
+                ? valRange / 5
+                : best;
+        }
+
+        // Scale factor: enough decimal places for float genes
+        int scale = 10000;
+
+        var targets = new HashSet<int>();
+        float first = Mathf.Ceil((minValue - valueInterval) / valueInterval) * valueInterval;
+        for (float t = first; t <= maxValue + valueInterval && targets.Count < MAX_LABELS; t += valueInterval)
+        {
+            targets.Add(Mathf.RoundToInt(t * scale));
+        }
+
+        void DrawLabel(VisualElement container, float norm, float alpha, string text)
+        {
+            var lbl = new Label(text);
+            lbl.AddToClassList("axis-text");
+            lbl.style.opacity   = alpha;
+            lbl.style.position  = Position.Absolute;
+            lbl.style.top       = (1f - norm) * chartH;
+            lbl.style.translate = new StyleTranslate(new Translate(0, Length.Percent(-50)));
+            container.Add(lbl);
+        }
+
+        string FormatAxisValue(float value)
+        {
+            return value.ToString("F2");
+        }
+
+        var cfg = new AxisConfig(
+            minGap:    MIN_GAP,
+            fadeZone:  FADE_ZONE,
+            chartSize: chartH,
+            minValue:  minValue,
+            maxValue:  maxValue,
+            labelData: geneValueLabeldata,
+            normalize: v   => Normalize(v),
+            formatKey: key => FormatAxisValue(key / (float)scale),
+            keyToData: key => key / (float)scale,
+            edgeAlpha: norm => EdgeAlpha(norm),
+            targets:   targets,
+            drawLabel: DrawLabel);
+
+        BuildAxisLabels(cfg, canvas);
+        }
 #endregion
+}
+
+record AxisConfig
+{
+    // Layout
+    public readonly float MinGap;
+    public readonly float FadeZone;
+    public readonly float ChartSize;        // width (X) or height (Y)
+
+    // Data range
+    public readonly float MinValue;
+    public readonly float MaxValue;
+
+    public readonly Dictionary<int, (float alpha, string text)> LabelData;
+
+    // Delegates
+    public readonly Func<float, float>  Normalize;     // dataValue → [0..1]
+    public readonly Func<int, string>   FormatKey;     // dict key → label text
+    public readonly Func<int, float>    KeyToData;     // dict key → data value
+    public readonly Func<float, float>  EdgeAlpha;     // normalised pos → alpha
+    public readonly HashSet<int>        Targets;       // keys for this frame
+    public readonly Action<VisualElement, float, float, string> DrawLabel; // (container,normPos,alpha,text)
+                                                       
+
+    public AxisConfig(
+        float minGap, float fadeZone, float chartSize,
+        float minValue, float maxValue,
+        Dictionary<int, (float alpha, string text)> labelData,
+        Func<float, float>  normalize,
+        Func<int, string>   formatKey,
+        Func<int, float>    keyToData,
+        Func<float, float>  edgeAlpha,
+        HashSet<int>        targets,
+        Action<VisualElement, float, float, string> drawLabel)
+    {
+        MinGap    = minGap;    FadeZone  = fadeZone; ChartSize = chartSize;
+        MinValue  = minValue;  MaxValue  = maxValue; LabelData = labelData;
+        Normalize = normalize; FormatKey = formatKey; KeyToData = keyToData;
+        EdgeAlpha = edgeAlpha; Targets   = targets;   DrawLabel = drawLabel;
+    }
 }

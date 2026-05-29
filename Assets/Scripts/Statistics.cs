@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class Statistics : MonoBehaviour
 {
-    static readonly Dictionary<string, Dictionary<Guid, float>> geneRecords = new Dictionary<string, Dictionary<Guid, float>>();
-    static readonly Dictionary<string, SortedDictionary<float, float>> geneHistoryAvarage = new Dictionary<string, SortedDictionary<float, float>>();
-    static readonly Dictionary<string,int> population = new Dictionary<string, int>();
-    static readonly Dictionary<string, SortedDictionary<float, int>> populationHistory = new Dictionary<string, SortedDictionary<float, int>>();
+    static readonly Dictionary<string, Dictionary<Guid, float>> geneRecords = new();
+    static readonly Dictionary<string, SortedDictionary<float, float>> geneHistoryAvarage = new();
+    static readonly Dictionary<string,int> population = new();
+    static readonly Dictionary<string, SortedDictionary<float, int>> populationHistory = new();
 
     public static event Action<string> OnGeneStatisticsUpdated;
     public static event Action OnPopulationUpdated;

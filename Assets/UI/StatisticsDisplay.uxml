@@ -1,23 +1,35 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Statistics.uss?fileID=7433441132597879392&amp;guid=a8d5793e51b16634ca7a3e65e854e1eb&amp;type=3#Statistics"/>
     <ui:VisualElement name="root" style="flex-grow: 1;">
-        <ui:VisualElement name="" style="flex-grow: 1; bottom: 0; right: 0; position: absolute; height: 45%; width: 35%; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
-            <ui:VisualElement name="stattistics-top" style="flex-grow: 0; width: auto; height: 35px; flex-direction: row; display: flex; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+        <ui:VisualElement name="" style="flex-grow: 1; bottom: 0; right: 0; position: absolute; height: 50%; width: 35%; margin-top: 10px; margin-right: 10px; margin-bottom: 10px; margin-left: 10px;">
+            <ui:VisualElement name="stattistics-top" style="flex-grow: 0; width: auto; height: auto; flex-direction: row; display: flex; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
                 <ui:Label text="Mode" class="text"/>
                 <ui:EnumField value="Population" type="StatisticsDisplayMode, Assembly-CSharp" name="mode-dropdown"/>
                 <ui:Label text="Animal" class="text"/>
-                <ui:DropdownField name="animal-dropdown"/>
+                <ui:DropdownField name="animal-dropdown" style="display: flex;"/>
             </ui:VisualElement>
             <ui:VisualElement name="gene-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; bottom: auto; right: auto; aspect-ratio: auto; opacity: 1; display: none;">
-                <ui:VisualElement name="gene-chart-top" style="flex-grow: 0; height: auto; flex-direction: row;">
-                    <ui:Label text="Gene" class="text"/>
-                    <ui:DropdownField name="gene-dropdown"/>
-                    <ui:Label text="History" class="text"/>
-                    <ui:Toggle name="gene-history-toggle"/>
-                    <ui:Label text="AVG -" name="gene-average-label" class="text"/>
-                    <ui:Label text="N -" name="gene-overall-count-label" class="text" style="position: absolute; right: 0%; bottom: 0%;"/>
+                <ui:VisualElement name="gene-chart-top" style="flex-grow: 0; flex-direction: column; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+                    <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                        <ui:Label text="Gene" class="text"/>
+                        <ui:DropdownField name="gene-dropdown"/>
+                        <ui:Label text="History" class="text"/>
+                        <ui:Toggle name="gene-history-toggle"/>
+                        <ui:Label text="AVG -" name="gene-average-label" class="text"/>
+                        <ui:Label text="N -" name="gene-overall-count-label" class="text" style="position: absolute; right: 0%; bottom: 0%;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="second-gene-top" style="flex-grow: 1; flex-direction: row; display: none;">
+                        <ui:Label text="Data Frame" class="text" style="font-size: 16px;"/>
+                        <ui:ToggleButtonGroup value="00010">
+                            <ui:Button text="50dp" name="g-50dp-button" class="btn"/>
+                            <ui:Button text="100dp" name="g-100dp-button" class="btn"/>
+                            <ui:Button text="250dp" name="g-250dp-button" class="btn"/>
+                            <ui:Button text="500dp" name="g-500dp-button" class="btn"/>
+                            <ui:Button text="ALL" name="g-alldp-button" class="btn"/>
+                        </ui:ToggleButtonGroup>
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="gene-distribution-chart" style="flex-grow: 1; flex-direction: row; display: none;">
+                <ui:VisualElement name="gene-distribution-chart" style="flex-grow: 1; flex-direction: row; display: flex;">
                     <ui:VisualElement style="width: 60px;">
                         <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
                             <ui:Label text="Count" class="text" style="rotate: -90deg;"/>
@@ -26,7 +38,7 @@
                         <ui:VisualElement style="height: 60px;"/>
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-grow: 1;">
-                        <ui:VisualElement name="gene-chart-tootip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 2px; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70);">
+                        <ui:VisualElement name="gene-chart-tootip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 0; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70);">
                             <ui:Label text="" name="gene-chart-tootip-label" style="flex-grow: 1; -unity-font-style: bold; font-size: 16px; -unity-text-align: middle-left;"/>
                         </ui:VisualElement>
                         <ui:VisualElement name="gene-distribution-canvas" style="flex-grow: 1; flex-shrink: 1; flex-direction: row; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; align-items: flex-end;"/>
@@ -36,11 +48,11 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="gene-history-chart" style="flex-grow: 1; flex-direction: row; display: flex;">
+                <ui:VisualElement name="gene-history-chart" style="flex-grow: 1; flex-direction: row; display: none;">
                     <ui:VisualElement style="width: 10%;">
                         <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
                             <ui:Label text="Value" class="text" style="width: 30%; rotate: -90deg; font-size: 14px;"/>
-                            <ui:VisualElement name="dfgfdg" style="flex-grow: 1; flex-shrink: 0; justify-content: space-between;">
+                            <ui:VisualElement name="gene-history-axis-y" style="flex-grow: 1; flex-shrink: 0; justify-content: space-between;">
                                 <ui:Label text="4" name="" class="axis-text"/>
                                 <ui:Label text="3" class="axis-text"/>
                                 <ui:Label text="2" class="axis-text"/>
@@ -51,12 +63,11 @@
                         <ui:VisualElement style="height: 30%;"/>
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-grow: 1;">
-                        <ui:VisualElement name="gene-history-chart-tooltip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 2px; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70);">
-                            <ui:Label text="" name="gene-chart-tootip-label" style="flex-grow: 1; -unity-font-style: bold; font-size: 16px; -unity-text-align: middle-left;"/>
+                        <ui:VisualElement name="gene-history-chart-canvas" style="flex-grow: 1; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0;">
+                            <ui:Label name="gene-chart-history-tootip-label" picking-mode="Ignore" style="-unity-font-style: normal; font-size: 16px; -unity-text-align: middle-left;"/>
                         </ui:VisualElement>
-                        <ui:VisualElement name="gene-history-chart-canvas" style="flex-grow: 1; flex-shrink: 1; flex-direction: row; border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; align-items: flex-end;"/>
                         <ui:VisualElement name="" style="flex-grow: 0; height: 25%;">
-                            <ui:VisualElement name="population-chahgjghjrt-axis-x" style="flex-grow: 1; flex-direction: row; justify-content: space-between;">
+                            <ui:VisualElement name="gene-history-axis-x" style="flex-grow: 1; flex-direction: row; justify-content: space-between;">
                                 <ui:Label text="0s" class="axis-text"/>
                                 <ui:Label text="1s" class="axis-text"/>
                                 <ui:Label text="2s" class="axis-text"/>
@@ -74,7 +85,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="population-chart" enabled="true" style="flex-grow: 1; height: auto; width: auto; aspect-ratio: auto; opacity: 1; display: flex;">
-                <ui:VisualElement name="population-chart-top" style="flex-grow: 0; height: auto; flex-direction: row; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+                <ui:VisualElement name="population-chart-top" style="flex-grow: 0; flex-direction: row; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
                     <ui:Label text="Data Frame" class="text" style="font-size: 16px;"/>
                     <ui:ToggleButtonGroup value="00010">
                         <ui:Button text="50dp" name="50dp-button" class="btn"/>
@@ -99,8 +110,9 @@
                         <ui:VisualElement style="height: 25%;"/>
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-grow: 1;">
-                        <ui:VisualElement name="population-chart-tooltip" style="flex-grow: 0; height: 30px; border-left-width: 2px; border-top-width: 2px; border-top-color: rgb(70, 70, 70); border-left-color: rgb(70, 70, 70); display: none;"/>
-                        <ui:VisualElement name="population-chart-canvas" style="border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; flex-grow: 1;"/>
+                        <ui:VisualElement name="population-chart-canvas" style="border-left-width: 2px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(70, 70, 70); border-right-color: rgb(70, 70, 70); border-top-color: rgb(70, 70, 70); border-bottom-color: rgb(70, 70, 70); border-bottom-width: 2px; border-top-width: 0; flex-grow: 1;">
+                            <ui:Label name="population-chart-tooltip-label" picking-mode="Ignore" style="-unity-font-style: normal; -unity-text-align: middle-left; font-size: 16px;"/>
+                        </ui:VisualElement>
                         <ui:VisualElement name="" style="flex-grow: 0; height: 25%;">
                             <ui:VisualElement name="population-chart-axis-x" style="flex-grow: 1; flex-direction: row; justify-content: space-between;">
                                 <ui:Label text="0s" class="axis-text"/>
